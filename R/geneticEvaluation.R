@@ -10,11 +10,11 @@ geneticEvaluation2 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
   })
   rtermssCopy <- rtermss
   for(u in 1:length(rtermss)){
-    if(rtermss[u] == "genoF"){ # main effect
+    if(rtermss[u] == "designation"){ # main effect
       rtermss[u] <- paste("sommer::vsc(sommer::isc( ",rtermss[u],"), Gu=Ac )")
     }else{ # environmental index interaction for FW
-      if(rtermss[u] == "genoF:envIndex" | rtermss[u] == "envIndex:genoF"){
-        rtermss[u] <- paste("sommer::vsc( sommer::dsc(envIndex), sommer::isc(genoF), Gu=Ac )")
+      if(rtermss[u] == "designation:envIndex" | rtermss[u] == "envIndex:designation"){
+        rtermss[u] <- paste("sommer::vsc( sommer::dsc(envIndex), sommer::isc(designation), Gu=Ac )")
       }else{
         rtermss[u] <-paste("sommer::vsc(sommer::isc( ",rtermss[u],"))")# rtermss[u] #paste("vsr( ",rtermss[u]," )")
       }
@@ -38,16 +38,16 @@ geneticEvaluation2 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
   }
   
   # ensure AFGE is complete
-  genoFlevels <- as.character(unique(data[,"genoF"]))
-  inter <- intersect(genoFlevels,colnames(AFGE)) # go for sure
-  differ <- setdiff(genoFlevels,inter) # are missing in AFGE matrix
+  designationlevels <- as.character(unique(data[,"designation"]))
+  inter <- intersect(designationlevels,colnames(AFGE)) # go for sure
+  differ <- setdiff(designationlevels,inter) # are missing in AFGE matrix
   if(length(differ) > 0){
     A2 <- diag(length(differ))
     colnames(A2) <- rownames(A2) <- differ
     Ac <- sommer::adiag1(AFGE,A2)
   }else{Ac <- AFGE}
   Ac <- as(Ac, Class="dgCMatrix")
-  # print(setdiff(levels(data$genoF),colnames(Ac)))
+  # print(setdiff(levels(data$designation),colnames(Ac)))
   # print(colnames(Ac))
   # get matrices from sommer
   # library(sommer)
@@ -117,10 +117,10 @@ geneticEvaluation2 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
   start2 <- start[-1]
   end2 <- end[-1]
   resultList <- list()
-  geneticTerms <- intersect(1:nrow(varComp), grep("genoF",varComp$VarComp) )
+  geneticTerms <- intersect(1:nrow(varComp), grep("designation",varComp$VarComp) )
   for(i in geneticTerms){ # i=1
     wgi <- (start2[i]):(end2[i])
-    if(rtermssCopy[i] == "genoF"){
+    if(rtermssCopy[i] == "designation"){
       predictedValue <- bu[wgi,] + bu[1,1]
     }else{
       predictedValue <- bu[wgi,]
@@ -130,7 +130,7 @@ geneticEvaluation2 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
     stdError <- sqrt(Matrix::diag(pev))
     # print("model done 2")
     R2 <- (listG[[i]] - pev)/listG[[i]]
-    if(!is.null(keep) & (length(grep("genoF",rtermssCopy[i])) > 0) ){
+    if(!is.null(keep) & (length(grep("designation",rtermssCopy[i])) > 0) ){
       keep2 <- (length(predictedValue)-keep+1):length(predictedValue)
       predictedValue <- predictedValue[keep2]
       pev <- pev[keep2,keep2, drop=FALSE]
