@@ -1,4 +1,4 @@
-nrm <- function(
+nrm2 <- function(
     pedData= NULL,
     verbose=FALSE
 ){

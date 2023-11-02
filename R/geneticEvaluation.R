@@ -1,4 +1,4 @@
-geneticEvaluation2 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL, 
+geneticEvaluation3 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL, 
                               AFGE=NULL, varComp=NULL, data=NULL, keep=NULL, tolParInv=1e-5){
   
   # AFGE <<- AFGE
