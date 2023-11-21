@@ -3,7 +3,7 @@ importFrom("graphics", "axis", "lines", "par", "points", "title")
 importFrom("stats", "cov", "dist", "median", "model.matrix", "optimize", "pbeta", "ppoints", "predict", "smooth.spline","var")
 export(cleanChar, cleanCharField,replaceValues, printTable, matToTab, tabToMat, fixCoords,
        atcg1234, markerBackTransform, asremlFormula, fillDesignSingle, geneticEvaluation3,
-       applyqGenoModifications,
+       computeqGenoModifications, applyqGenoModifications,
        nrm2, grm2)
 
 
