@@ -54,7 +54,7 @@ geneticEvaluation3 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
   # if(is.null(rcov)){
     # mixSommer <- sommer::mmec(fixed=fixed, random=random2, data=data, returnParam = TRUE)
   # }else{
-    mixSommer <- sommer::mmec(fixed=fixed, random=random2, rcov=rcov2, data=data, returnParam = TRUE)
+    mixSommer <- sommer::mmec(fixed=fixed, random=random2, rcov=rcov2, data=data, returnParam = TRUE, dateWarning = FALSE)
     # print("model done")
   # }
   # form H
