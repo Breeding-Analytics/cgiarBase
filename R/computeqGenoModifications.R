@@ -1,5 +1,5 @@
 computeGenoModifications <- function(
-    markerDTfile = NULL, # markers are assumed to come centered
+    M = NULL, # markers are assumed to come centered
     propNaUpperThreshForMarker=.3,
     propNaUpperThreshForInds=.3,
     maf=0.05, ploidy=2,
@@ -50,11 +50,11 @@ computeGenoModifications <- function(
   }else{
     stop("Method not implemented yet.",call. = FALSE)
   }
-  # markerDTfile$modifications$geno <- rbind(markerDTfile$modifications$geno, modifications)
+  # M$modifications$geno <- rbind(M$modifications$geno, modifications)
   #########################################
   ## update the rest of the data tables
   ## write the parameters to the parameter database
-  # markerDTfile$status <- rbind( markerDTfile$status, data.frame(module="qaGeno", analysisId=qamAnalysisId))
+  # M$status <- rbind( M$status, data.frame(module="qaGeno", analysisId=qamAnalysisId))
 
   return(modifications)
 }
