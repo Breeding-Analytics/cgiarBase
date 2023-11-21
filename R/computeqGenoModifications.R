@@ -1,4 +1,4 @@
-computeqGenoModifications <- function(
+computeGenoModifications <- function(
     markerDTfile = NULL, # markers are assumed to come centered
     propNaUpperThreshForMarker=.3,
     propNaUpperThreshForInds=.3,

@@ -1,4 +1,4 @@
-applyqGenoModifications <- function(M, modifications){
+applyGenoModifications <- function(M, modifications){
   
   # apply the modifications that only apply to row
   onlyRow <- which(!is.na(modifications$row) & is.na(modifications$col))
