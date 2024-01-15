@@ -1,7 +1,7 @@
-fixCoords <- function(mydataSub){
+fixCoords <- function(mydataSub, rowcoord, colcoord, rep){
 
-  uniqueReps <- unique(mydataSub[,"rep"])
-  ideal <- with(mydataSub, table(rowcoord, colcoord, rep))
+  uniqueReps <- unique(mydataSub[,rep])
+  ideal <- table(mydataSub$row, mydataSub$col, mydataSub$rep) # with(mydataSub, table(rowcoord, colcoord, rep))
   nReps <- dim(ideal)[3]
   nCols <- nRows <- numeric()
   orRows <- orCols <- list()
@@ -24,19 +24,19 @@ fixCoords <- function(mydataSub){
   # replace bad values with correct values
   for(i in 1:nReps){
 
-    mydataSub[which(mydataSub[,"rep"] == i),"colcoord"] <- cgiarBase::replaceValues(
-      Source=mydataSub[which(mydataSub[,"rep"] == i),"colcoord"],
+    mydataSub[which(mydataSub[,rep] == i),colcoord] <- cgiarBase::replaceValues(
+      Source=mydataSub[which(mydataSub[,rep] == i),colcoord],
       Search = orCols[[i]], Replace = (start[i]):(end[i])
     )
 
-    mydataSub[which(mydataSub[,"rep"] == i),"rowcoord"] <- cgiarBase::replaceValues(
-      Source=mydataSub[which(mydataSub[,"rep"] == i),"rowcoord"],
+    mydataSub[which(mydataSub[,rep] == i),rowcoord] <- cgiarBase::replaceValues(
+      Source=mydataSub[which(mydataSub[,rep] == i),rowcoord],
       Search = orRows[[i]], Replace = (start2[i]):(end2[i])
     )
 
   }
-
-  mydataSub$rowcoordF <- as.factor(mydataSub$rowcoord)
-  mydataSub$colcoordF <- as.factor(mydataSub$colcoord)
+# 
+#   mydataSub[,paste0(rowcoord,"F")] <- as.factor(mydataSub[,rowcoord])
+#   mydataSub[,colcoord] <- as.factor(mydataSub[,colcoord])
   return(mydataSub)
 }
