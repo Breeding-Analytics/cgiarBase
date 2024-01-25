@@ -1,12 +1,18 @@
 nrm2 <- function(
     pedData= NULL,
-    verbose=FALSE
+    verbose=FALSE,
+    indivCol=NULL, damCol=NULL, sireCol=NULL,
+    returnMatrix=TRUE
 ){
   ## THIS FUNCTION CALCULATES A NUMERATOR RELATIONSHIP MATRIX
   ## IS USED IN THE BANAL APP UNDER THE STRUCTURE MODULES
   ############################
   # loading the dataset
   if (is.null(pedData)) stop("No input marker data file specified.")
+  if (is.null(indivCol)) stop("Name of individual not specified. Please provide")
+  if (is.null(damCol)) stop("Name of dam not specified. Please provide")
+  if (is.null(sireCol)) stop("Name of sire not specified. Please provide")
+  pedData <- pedData[,c(indivCol, damCol, sireCol)]
   pedData <- unique(pedData)
   colnames(pedData) <- c("indiv","dam","sire")
   for(j in c("sire","dam","indiv")){
@@ -69,5 +75,14 @@ nrm2 <- function(
     A <- as.matrix(pedigreemm::getA(ped))
     rownames(A) <- colnames(A) <- as.character(idsDfInverse[rownames(A),])
   }
-  return(A)
+  if(returnMatrix){
+    return(A)
+  }else{
+    pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
+               b= as.character(idsDfInverse[ped@dam,]),
+               c = as.character(idsDfInverse[ped@sire,])
+               )
+    colnames(pedChar) <- c(indivCol, damCol, sireCol)
+    return(pedChar)
+  }
 }
