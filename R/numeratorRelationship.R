@@ -23,6 +23,8 @@ nrm2 <- function(
   pedData <- unique(pedData)
   if(nrow(pedData) == length(which(is.na(pedData$dam)))){ # no pedigree information available
     A <- diag(nrow(pedData)); rownames(A) <- colnames(A) <- as.character(pedData$indiv)
+    ids <- as.character(pedData$indiv)
+    idsDfInverse <- data.frame(ids = ids); rownames(idsDfInverse) <- 1:length(ids)
   }else{
     # "IR78761-B-SATB2-17-1"
     # the ones that should have NA in dam and sire
@@ -78,10 +80,17 @@ nrm2 <- function(
   if(returnMatrix){
     return(A)
   }else{
-    pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
-               b= as.character(idsDfInverse[ped@dam,]),
-               c = as.character(idsDfInverse[ped@sire,])
-               )
+    if(nrow(pedData) == length(which(is.na(pedData$dam)))){ # no pedigree information available
+      pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
+                            b= NA,
+                            c = NA
+      )
+    }else{
+      pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
+                            b= as.character(idsDfInverse[ped@dam,]),
+                            c = as.character(idsDfInverse[ped@sire,])
+      )
+    }
     colnames(pedChar) <- c(indivCol, damCol, sireCol)
     return(pedChar)
   }
