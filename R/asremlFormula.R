@@ -2,7 +2,7 @@ asremlFormula <- function(fixed, random, rcov, dat, minRandomLevels=NULL, minRes
                           exchangeResidualEffects=NULL,customRandomLevels=NULL, customResidualLevels=NULL,
                           xCoordinate= "ROWf",yCoordinate ="RANGEf", doubleConstraintRandom=c("ROWf","RANGEf"),
                           verbose=FALSE){
-  
+  # test
   # ------------------------------------------------------------------------- #
   # This function was generated as part of the fully-automated wheat pipeline #
   # Developer: Giovanny Covarrubias-Pazaran 
