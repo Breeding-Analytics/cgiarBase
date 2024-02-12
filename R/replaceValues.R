@@ -6,6 +6,7 @@ replaceValues <- function(Source, Search, Replace){
     Changed <- replace(Changed, Changed == Search[i], Replace[i])
   }
   # silly comment
+  # second silly comment
 
   if(is.numeric(Replace))
     Changed <- as.numeric(Changed)
