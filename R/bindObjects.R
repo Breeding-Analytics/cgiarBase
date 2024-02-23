@@ -54,6 +54,7 @@ bindObjects <- function(
             newMetadata <- rbind(object1$metadata[[subItems[iSub]]],object2$metadata[[subItems[iSub]]])
             traits <- newMetadata[which(newMetadata$parameter %in% "trait"),]; traits <- traits[which(!duplicated(traits$value)),]
             newMetadata <- newMetadata[which(!duplicated(newMetadata$parameter)),]
+            newMetadata <- newMetadata[which(!newMetadata$parameter == "trait"),]
             newMetadata$value <- newMetadata$parameter
             newMetadata <- rbind(newMetadata, traits)
             mainElements$metadata[[subItems[iSub]]] <- newMetadata
