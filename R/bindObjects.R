@@ -7,8 +7,10 @@ bindObjects <- function(
   if(is.null(object1)){stop("Please provide the name of the file to be used for analysis", call. = FALSE)}
   if(is.null(object2)){stop("Please provide the name of the file to be used for analysis", call. = FALSE)}
 
-  base0 <- list(pheno=data.frame(), pedigree=data.frame(), geno=data.frame(), weather=data.frame(), qtl=data.frame()  )
-  mainElements <- list(base0,base0,base0); names(mainElements) <- c("data", "metadata", "modifications")
+  # base0 <- list(pheno=data.frame(), pedigree=data.frame(), geno=data.frame(), weather=data.frame(), qtl=data.frame()  )
+  # mainElements <- list(base0,base0,base0); names(mainElements) <- c("data", "metadata", "modifications")
+  mainElements <- lapply(vector(mode="list",3), function(x,nn){resx <- vector(mode="list",nn); names(resx) <- c("pheno","pedigree","weather","qtl","geno");return(resx)}, nn=5)
+  names(mainElements) <- c("data", "metadata", "modifications")
   mainElements$status <- mainElements$modeling <- mainElements$metrics <- mainElements$predictions <- data.frame()
   ###################################
   # loading the dataset
