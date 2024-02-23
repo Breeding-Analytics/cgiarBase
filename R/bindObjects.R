@@ -6,30 +6,30 @@ bindObjects <- function(
   ## THIS FUNCTION ROW BINDS TWO MARKER MATRICES AND ASSOCIATED TABLES
   if(is.null(object1)){stop("Please provide the name of the file to be used for analysis", call. = FALSE)}
   if(is.null(object2)){stop("Please provide the name of the file to be used for analysis", call. = FALSE)}
-  
+
   base0 <- list(pheno=data.frame(), pedigree=data.frame(), geno=data.frame(), weather=data.frame(), qtl=data.frame()  )
   mainElements <- list(base0,base0,base0); names(mainElements) <- c("data", "metadata", "modifications")
   mainElements$status <- mainElements$modeling <- mainElements$metrics <- mainElements$predictions <- data.frame()
   ###################################
   # loading the dataset
-  for(iMain in 1:length(mainElements)){ #  for each element of data, metadata, modifications, modeling, status, etc ... bind   iMain=3
+  for(iMain in 1:length(mainElements)){ #  for each element of data, metadata, modifications, modeling, status, etc ... bind   iMain=1
     if( names(mainElements)[iMain] %in% c("data","metadata","modifications") ){ # user may not have same format
       subItems <- names(mainElements[[names(mainElements)[iMain]]])
-      for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) ){ # for each nested element
+      for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) ){ # for each nested element   iSub=3
         if(names(mainElements)[iMain] == "data"){ # this are complex, data can be in completely different formats, column names, etc
           # we have to modify both data and metadata at the same time
           if(subItems[iSub] %in% c("pheno","pedigree","weather","qtl") ){
             # bind data tables
             provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno1)){
-              colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1), 
-                                                               Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"], 
+              colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
+                                                               Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"],
                                                                Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter != "trait"])
             }
             provPheno2 <- object2$data[[subItems[iSub]]][ ,object2$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno2)){
-              colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2), 
-                                                               Search = object2$metadata[[subItems[iSub]]]$value[object2$metadata[[subItems[iSub]]]$parameter != "trait"], 
+              colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2),
+                                                               Search = object2$metadata[[subItems[iSub]]]$value[object2$metadata[[subItems[iSub]]]$parameter != "trait"],
                                                                Replace = object2$metadata[[subItems[iSub]]]$parameter[object2$metadata[[subItems[iSub]]]$parameter != "trait"])
             }
             allNames <- unique(c(colnames(provPheno1), colnames(provPheno2)))
@@ -52,23 +52,21 @@ bindObjects <- function(
             newMetadata <- rbind(object1$metadata[[subItems[iSub]]],object2$metadata[[subItems[iSub]]])
             newMetadata <- newMetadata[which(!duplicated(newMetadata$parameter)),]
             newMetadata$value <- newMetadata$parameter
-            mainElements$metadata[[subItems[iSub]]] <- newMetadata 
+            mainElements$metadata[[subItems[iSub]]] <- newMetadata
           }else if(subItems[iSub] == "geno"){ # if we need to fill the genotype slot
             if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) ){ # ifboth objects have genotype data
-              uniqueMarkers <- unique( c( colnames(object1$data$geno), colnames(object1$data$geno) ))
+              uniqueMarkers <- unique( c( colnames(object1$data$geno), colnames(object2$data$geno) ))
               # only keep new individuals, ignore the others
               newInds <- setdiff( rownames(object2$data$geno), rownames(object1$data$geno) )
-              object2$data$geno <- object2$data$geno[newInds, ]
-              uniqueIndividuals <- unique( c( rownames(object1$data$geno), rownames(object2$data$geno) ))
-              Mx <- matrix(NA, nrow=length(uniqueIndividuals), ncol=length(uniqueMarkers) ) # new marker matrix
-              rownames(Mx) <- uniqueIndividuals; colnames(Mx) <- uniqueMarkers
+              Mx <- matrix(NA, nrow=nrow(object1$data$geno)+nrow(object2$data$geno), ncol=length(uniqueMarkers) ) # new marker matrix
+              colnames(Mx) <- uniqueMarkers
               metaX <- data.frame(marker=uniqueMarkers, chr=NA, pos=NA, refAllele=NA, altAllele=NA ) # new metadata for geno
-              ploidyInObject2 <- round(diff(range( object2$data$geno, na.rm=TRUE)))
-              for(iMarker in uniqueMarkers){ # for each unique marker  iMarker = uniqueMarkers[1]
-                print(iMarker)
+              if(length(newInds) > 0){ploidyInObject2 <- round(diff(range( object2$data$geno, na.rm=TRUE)))}else{ploidyInObject2 <- round(diff(range( object1$data$geno, na.rm=TRUE)))}
+              for(iMarker in uniqueMarkers){ # for each unique marker  iMarker = uniqueMarkers[2]
                 presentIn1 <- intersect(colnames(object1$data$geno), iMarker)
                 presentIn2 <- intersect(colnames(object2$data$geno), iMarker)
                 if( (length(presentIn1)+length(presentIn2)) == 2 ){ # if marker is present in both objects
+                  # print(iMarker)
                   meta1 <- object1$metadata$geno[object1$metadata$geno$marker == iMarker,]
                   meta2 <- object2$metadata$geno[object2$metadata$geno$marker == iMarker,]
                   differentialAlleles <- setdiff(c(meta1$refAllele, meta1$altAllele), c(meta2$refAllele, meta2$altAllele) )
@@ -81,7 +79,7 @@ bindObjects <- function(
                     if(meta1$refAllele == meta2$refAllele){ # we have same reference allele, we do a straigth bind
                       Mx[,iMarker] <- c(object1$data$geno[,iMarker], object2$data$geno[,iMarker])
                     }else{ # we have different reference allele, transform marker matrix
-                      Mx[,iMarker] <- c(object1$data$geno[,iMarker], (object2$data$geno[,iMarker] - ploidyInObject2) ) 
+                      Mx[,iMarker] <- c(object1$data$geno[,iMarker], (object2$data$geno[,iMarker] - ploidyInObject2) )
                     }
                     metaX[metaX$marker == iMarker,] <- meta1
                   }
@@ -91,10 +89,22 @@ bindObjects <- function(
                     metaX[metaX$marker == iMarker,] <-  object1$metadata$geno[object1$metadata$geno$marker == iMarker,]
                   }else if(length(presentIn2) > 0){ # marker is in object 2
                     Mx[,iMarker] <- c( rep(NA, nrow(object1$data$geno) ), object2$data$geno[,iMarker] )
-                    metaX[metaX$marker == iMarker,] <-  object2$metadata$geno[object1$metadata$geno$marker == iMarker,]
+                    metaX[metaX$marker == iMarker,] <-  object2$metadata$geno[object2$metadata$geno$marker == iMarker,]
                   }
                 } # end of:  if( (length(presentIn1)+length(presentIn2)) == 2)
               } # end of:  for(iMarker in uniqueMarkers)
+              ## there may be duplicated individuals, keep the best record from each individual
+              concatenatedRownames <-  c( rownames(object1$data$geno), rownames(object2$data$geno) )
+              checkIndsReps <- table( concatenatedRownames )
+              indsToCorrect <- unique(names(which(checkIndsReps > 1)))
+              toRemove <- vector(mode = "list", length = length(indsToCorrect) ); counter <- 1
+              for(iInd in indsToCorrect){ # iInd = indsToCorrect[1]
+                provInd <- which(concatenatedRownames %in% iInd)
+                propNa <- apply(Mx[provInd,],1,function(x){length(which(is.na(x)))/length(x)})
+                keepRow <- provInd[which(propNa == min(propNa))[1]] # lowest mssing data
+                toRemove[[counter]] <- setdiff(provInd, keepRow); counter <- counter + 1 # higher missing data
+              }
+              Mx <- Mx[-unlist(toRemove),]
               mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- Mx # store new markers
               mainElements$metadata[[subItems[iSub]]] <- metaX # store new metadata
             }else{ # only one object has genotype data
@@ -115,6 +125,6 @@ bindObjects <- function(
       mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
     }
   }
-  
+
   return(mainElements)
 }
