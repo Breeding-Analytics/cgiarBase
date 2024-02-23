@@ -17,7 +17,7 @@ bindObjects <- function(
   for(iMain in 1:length(mainElements)){ #  for each element of data, metadata, modifications, modeling, status, etc ... bind   iMain=1
     if( names(mainElements)[iMain] %in% c("data","metadata","modifications") ){ # user may not have same format
       subItems <- names(mainElements[[names(mainElements)[iMain]]])
-      for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) ){ # for each nested element   iSub=3
+      for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) ){ # for each nested element   iSub=1
         if(names(mainElements)[iMain] == "data"){ # this are complex, data can be in completely different formats, column names, etc
           # we have to modify both data and metadata at the same time
           if(subItems[iSub] %in% c("pheno","pedigree","weather","qtl") ){
@@ -52,8 +52,10 @@ bindObjects <- function(
             mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- newData
             # update metadata
             newMetadata <- rbind(object1$metadata[[subItems[iSub]]],object2$metadata[[subItems[iSub]]])
+            traits <- newMetadata[which(newMetadata$parameter %in% "trait"),]; traits <- traits[which(!duplicated(traits$value)),]
             newMetadata <- newMetadata[which(!duplicated(newMetadata$parameter)),]
             newMetadata$value <- newMetadata$parameter
+            newMetadata <- rbind(newMetadata, traits)
             mainElements$metadata[[subItems[iSub]]] <- newMetadata
           }else if(subItems[iSub] == "geno"){ # if we need to fill the genotype slot
             if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) ){ # ifboth objects have genotype data
@@ -107,6 +109,7 @@ bindObjects <- function(
                 toRemove[[counter]] <- setdiff(provInd, keepRow); counter <- counter + 1 # higher missing data
               }
               Mx <- Mx[-unlist(toRemove),]
+              rownames(Mx) <- concatenatedRownames[-unlist(toRemove)]
               mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- Mx # store new markers
               mainElements$metadata[[subItems[iSub]]] <- metaX # store new metadata
             }else{ # only one object has genotype data
