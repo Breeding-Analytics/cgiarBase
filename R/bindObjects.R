@@ -102,15 +102,17 @@ bindObjects <- function(
               concatenatedRownames <-  c( rownames(object1$data$geno), rownames(object2$data$geno) )
               checkIndsReps <- table( concatenatedRownames )
               indsToCorrect <- unique(names(which(checkIndsReps > 1)))
-              toRemove <- vector(mode = "list", length = length(indsToCorrect) ); counter <- 1
-              for(iInd in indsToCorrect){ # iInd = indsToCorrect[1]
-                provInd <- which(concatenatedRownames %in% iInd)
-                propNa <- apply(Mx[provInd,],1,function(x){length(which(is.na(x)))/length(x)})
-                keepRow <- provInd[which(propNa == min(propNa))[1]] # lowest mssing data
-                toRemove[[counter]] <- setdiff(provInd, keepRow); counter <- counter + 1 # higher missing data
+              if(length(indsToCorrect) > 0){
+                toRemove <- vector(mode = "list", length = length(indsToCorrect) ); counter <- 1
+                for(iInd in indsToCorrect){ # iInd = indsToCorrect[1]
+                  provInd <- which(concatenatedRownames %in% iInd)
+                  propNa <- apply(Mx[provInd,],1,function(x){length(which(is.na(x)))/length(x)})
+                  keepRow <- provInd[which(propNa == min(propNa))[1]] # lowest mssing data
+                  toRemove[[counter]] <- setdiff(provInd, keepRow); counter <- counter + 1 # higher missing data
+                }
+                Mx <- Mx[-unlist(toRemove),]
+                rownames(Mx) <- concatenatedRownames[-unlist(toRemove)]
               }
-              Mx <- Mx[-unlist(toRemove),]
-              rownames(Mx) <- concatenatedRownames[-unlist(toRemove)]
               mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- Mx # store new markers
               mainElements$metadata[[subItems[iSub]]] <- metaX # store new metadata
             }else{ # only one object has genotype data
