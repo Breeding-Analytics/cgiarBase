@@ -111,8 +111,9 @@ bindObjects <- function(
                   toRemove[[counter]] <- setdiff(provInd, keepRow); counter <- counter + 1 # higher missing data
                 }
                 Mx <- Mx[-unlist(toRemove),]
-                rownames(Mx) <- concatenatedRownames[-unlist(toRemove)]
+                concatenatedRownames <- concatenatedRownames[-unlist(toRemove)]
               }
+              rownames(Mx) <- concatenatedRownames
               mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- Mx # store new markers
               mainElements$metadata[[subItems[iSub]]] <- metaX # store new metadata
             }else{ # only one object has genotype data
