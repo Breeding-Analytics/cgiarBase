@@ -1,5 +1,7 @@
-matToTab <- function(A){
-  A[lower.tri(A)] <- NA
+matToTab <- function(A, symmetric=TRUE){
+  if(symmetric){
+    A[lower.tri(A)] <- NA
+  }
   Adf <- as.data.frame(as.table(A)) # converts a matrix in a data frame
   Adf <- Adf[which(!is.na(Adf$Freq)),]
   Adf$Var1n <- as.numeric(as.factor(Adf$Var1))

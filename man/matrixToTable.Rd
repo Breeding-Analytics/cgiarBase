@@ -8,13 +8,17 @@ Matrix to Table
 Converts a matrix to a table format.
 }
 \usage{
-matToTab(A)
+matToTab(A, symmetric=TRUE)
 }
 
 \arguments{
   \item{A}{
 A numeric matrix.
 }
+\item{symmetric}{
+Whether a symmetric matrix should be assumed or not
+}
+
 }
 \details{
 
@@ -31,7 +35,8 @@ None
 
 \examples{
 
-A <- matrix(1:9,3,3)
-matToTab(A)
+A <- matrix(1:9,3,3);A # original
+B <- matToTab(A, symmetric = FALSE);B # move to data frame format
+A2 <- tabToMat(B, symmetric = FALSE);A2 # move back to matrix
 
 }
