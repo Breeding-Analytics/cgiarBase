@@ -1,9 +1,5 @@
 fillDesignSingle <- function(x,rows="ROW",ranges="RANGE", by, extra){
   
-  # ------------------------------------------------------------------------- #
-  # This function was generated as part of the fully-automated wheat pipeline #
-  # Developer: Giovanny Covarrubias-Pazaran 
-  # ------------------------------------------------------------------------- #
   checo <- which(colnames(x) %in% c(rows,ranges))
   if(length(checo)!=2){
     stop("Please double check the rows and ranges argument that you provided. We did not find such columns.\n")
