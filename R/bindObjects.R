@@ -73,7 +73,11 @@ bindObjects <- function(
                 if( (length(presentIn1)+length(presentIn2)) == 2 ){ # if marker is present in both objects
                   # print(iMarker)
                   meta1 <- object1$metadata$geno[object1$metadata$geno$marker == iMarker,]
+                  if(is.na(meta1$refAllele)){meta1$refAllele <- meta1$altAllele}
+                  if(is.na(meta1$altAllele)){meta1$altAllele <- meta1$refAllele}
                   meta2 <- object2$metadata$geno[object2$metadata$geno$marker == iMarker,]
+                  if(is.na(meta2$refAllele)){meta2$refAllele <- meta2$altAllele}
+                  if(is.na(meta2$altAllele)){meta2$altAllele <- meta2$refAllele}
                   differentialAlleles <- setdiff(c(meta1$refAllele, meta1$altAllele), c(meta2$refAllele, meta2$altAllele) )
                   if(length(differentialAlleles) > 0){ # multi-allelic marker, we set to NA all the calls
                     Mx[,iMarker] <- NA # we ignore this ones

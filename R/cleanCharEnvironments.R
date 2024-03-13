@@ -13,7 +13,7 @@ cleanCharField <- function(x){
   x <- gsub("base_trial",".",x)
   
   x <- toupper(x) # everything goes to upper case
-  x <- gsub(" ", "-", x) # for fieldinstances white spaces become dashes
+  x <- gsub(" ", "-", x) # for fieldinstances white spaces become dashes!!!!!!!!!!!!!!!!
   x <- gsub("[[:punct:]]", "-", x) # all special characters become "-"
   x <- gsub("-----","-",x) # ensure a single "-"
   x <- gsub("----","-",x) # ensure a single "-"

@@ -1,7 +1,7 @@
 fixCoords <- function(mydataSub, rowcoord, colcoord, rep){
 
   uniqueReps <- unique(mydataSub[,rep])
-  ideal <- table(mydataSub$row, mydataSub$col, mydataSub$rep) # with(mydataSub, table(rowcoord, colcoord, rep))
+  ideal <- table(mydataSub[,rowcoord], mydataSub[,colcoord], mydataSub[,rep]) # with(mydataSub, table(rowcoord, colcoord, rep))
   nReps <- dim(ideal)[3]
   nCols <- nRows <- numeric()
   orRows <- orCols <- list()

@@ -137,9 +137,9 @@ geneticEvaluation3 <- function(fixed=NULL,random=NULL,rcov=NULL,weights=NULL,
       stdError <- sqrt(Matrix::diag(pev))
       # print("model done 3")
       R2 <- R2[keep2,keep2, drop=FALSE]
-      # print(R2[1:4,1:4])
+      print(R2[1:4,1:4])
       r2 <- Matrix::diag(R2)
-    }
+    }else{r2 <- Matrix::diag(R2)}
     resultList[[rtermssCopy[i]]] <- list(predictedValue=predictedValue, stdError=stdError, pev=pev, R2=r2)
     # print("model done 4")
   }
