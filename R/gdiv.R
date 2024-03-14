@@ -48,17 +48,18 @@ groups[,1]=as.numeric(as.factor(groups[,1]))
 					     #solo quito monomorficos
                          vect2=which(tfreq2$pest!=1 & tfreq2$pest1!=1 & tfreq2$pest!=0 & tfreq2$pest1!=0)
                          if (length(vect2)!=0){
-                           tfreq2=tfreq2[vect2,]
-                           nummark[[i]]=length(vect2)
-                           tfreq2=t(tfreq2[,1:(ncol(tfreq2)-2)])
-                           heW[[i]]=heiter(tfreq2)
+				 writemono=cbind(rownames(tfreq2)[-vect2],tfreq2$pest[-vect2])
+                           	tfreq2=tfreq2[vect2,]
+                           	nummark[[i]]=length(vect2)
+                           	tfreq2=t(tfreq2[,1:(ncol(tfreq2)-2)])
+                           	heW[[i]]=heiter(tfreq2)
                          }else{
                               nummark[[i]]=0
                               heW[[i]]="All markers monomorphics"
                               }
 					}else{
 					    vect2=which(tfreq2$pest!=1 & tfreq2$pest1!=1 & tfreq2$pest!=0 & tfreq2$pest1!=0)
-						print(length(vect2))
+						#print(length(vect2))
 						if (length(vect2)!=0){
 						    writemono=cbind(rownames(tfreq2)[-vect2],tfreq2$pest[-vect2])
 						    #write.csv(writemono,paste("MarkersMonomorphicsFor_",levels(pp[,1])[i],".csv",sep=""),row.names=F)
