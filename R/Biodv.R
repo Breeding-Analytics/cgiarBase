@@ -238,7 +238,7 @@ rm(aux,N,mds)
 ###For do dendograms and MDSgraph
 #########################################################################
 #########################################################################
-cluster::clust=agnes(mrdMAT, method = "ward")
+clust=cluster::agnes(mrdMAT, method = "ward")
 
 library(dendextend)
 coord1=as.data.frame(coord)
