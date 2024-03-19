@@ -1,7 +1,7 @@
 #Procedure amova
 forAMOVA<-function(agc.dist,agc.env){
-     suppressWarnings(library(vegan))
-     agc.adonis <- adonis2(agc.dist ~ Pop, data=agc.env, permutations=9999)
+     #suppressWarnings(library(vegan))
+     agc.adonis <- vegan::adonis2(agc.dist ~ Pop, data=agc.env, permutations=9999)
      adonis.data <- data.frame(agc.adonis)
      adonis.data$MS <- adonis.data$SumOfSqs / adonis.data$Df
      pop.sizes <- table(agc.env$Pop)
