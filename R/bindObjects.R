@@ -9,9 +9,10 @@ bindObjects <- function(
 
   # base0 <- list(pheno=data.frame(), pedigree=data.frame(), geno=data.frame(), weather=data.frame(), qtl=data.frame()  )
   # mainElements <- list(base0,base0,base0); names(mainElements) <- c("data", "metadata", "modifications")
-  mainElements <- lapply(vector(mode="list",3), function(x,nn){resx <- vector(mode="list",nn); names(resx) <- c("pheno","pedigree","weather","qtl","geno");return(resx)}, nn=5)
-  names(mainElements) <- c("data", "metadata", "modifications")
-  mainElements$status <- mainElements$modeling <- mainElements$metrics <- mainElements$predictions <- data.frame()
+  # mainElements <- lapply(vector(mode="list",3), function(x,nn){resx <- vector(mode="list",nn); names(resx) <- c("pheno","pedigree","weather","qtl","geno");return(resx)}, nn=5)
+  # names(mainElements) <- c("data", "metadata", "modifications")
+  # mainElements$status <- mainElements$modeling <- mainElements$metrics <- mainElements$predictions <- data.frame()
+  mainElements <- cgiarBase::create_getData_object()
   ###################################
   # loading the dataset
   for(iMain in 1:length(mainElements)){ #  for each element of data, metadata, modifications, modeling, status, etc ... bind   iMain=1
@@ -136,6 +137,10 @@ bindObjects <- function(
       } # end of: for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) )
     }else{ # user wants to do a pure row bind (predictions, metrics, modeling, status tables)
       mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
+      # print(mainElements[[names(mainElements)[iMain]]])
+      if(!is.null(mainElements[[names(mainElements)[iMain]]])){
+        if(nrow(mainElements[[names(mainElements)[iMain]]]) == 0){mainElements[[names(mainElements)[iMain]]] <- NULL}
+      }
     }
   }
 
