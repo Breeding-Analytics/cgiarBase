@@ -44,7 +44,6 @@ Simple function to print a table.
 An interactive table. 
 
 }
-}
 
 \references{
 None
