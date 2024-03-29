@@ -6,16 +6,16 @@ summary_stats <- function(data, genotype, trial, traits, rep = NULL, block = NUL
   if (is.null(genotype) || !genotype %in% names(data)) stop("Error: 'genotype' column not found.")
   if (is.null(traits) || !all(traits %in% names(data))) stop("Error: One or more 'traits' columns not found.")
 
-  # Automatically handle missing optional parameters
-  optional_params <- list(rep = rep, block = block, row = row, col = col)
-  for (param in names(optional_params)) {
-    if (is.null(optional_params[[param]])) {
-      message(paste0("No '", param, "' name column provided. Creating 'NA' column."))
-      data[[param]] <- NA
-    } else if (!optional_params[[param]] %in% names(data)) {
-      stop(paste("Error: '", optional_params[[param]], "' column not found."))
-    }
-  }
+  # # Automatically handle missing optional parameters
+  # optional_params <- list(rep = rep, block = block, row = row, col = col)
+  # for (param in names(optional_params)) {
+  #   if (is.null(optional_params[[param]])) {
+  #     message(paste0("No '", param, "' name column provided. Creating 'NA' column."))
+  #     data[[param]] <- NA
+  #   } else if (!optional_params[[param]] %in% names(data)) {
+  #     stop(paste("Error: '", optional_params[[param]], "' column not found."))
+  #   }
+  # }
 
   for (i in traits) {
     if (!i %in% names(data)) {
@@ -80,17 +80,19 @@ summary_stats <- function(data, genotype, trial, traits, rep = NULL, block = NUL
 
   p1 <- plotly::ggplotly(p1)
 
-  # Identify trials with >= 50% missing data for specified traits
+  # Identify trials with high perc of missing data for specified traits
   missing_data_trials <- stats_descri %>%
     filter(miss_perc >= missing_data_threshold) %>% # Combine filter conditions for efficiency
     dplyr::distinct(trial_name, traits, miss_perc)
 
   if(nrow(missing_data_trials) == 0){
-    message(paste0("No traits with more than ", missing_data_threshold, "%",  "of missing data"))
+    message(paste0("No traits with more than ", (missing_data_threshold)*100, "%",  " of missing data"))
+    data_filtered <- data
   }else{
     message(paste0("The following traits have been removed from the corresponding trial"))
-    data_cleaned <- data %>%
+    data_filtered <- data %>%
       mutate(across(all_of(unique(missing_data_trials$traits)), ~ifelse(trial_name %in% unique(missing_data_trials$trial_name), NA, .)))
+
   }
 
 
@@ -98,7 +100,7 @@ summary_stats <- function(data, genotype, trial, traits, rep = NULL, block = NUL
     stats_descri = stats_descri,
     missing_data_plot = p1,
     missing_data_trials_removed = missing_data_trials,
-    data_cleaned = data_cleaned,
+    data_cleaned = data_filtered,
     inputs = list(
       genotype = genotype,
       trial = trial,

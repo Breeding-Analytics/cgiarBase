@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Package: cgiarPipeline
 Type: Package
 Title: Special functions for multiple analytical pipelines related to Biometrics procedures.
@@ -10,3 +11,17 @@ Depends: R (>= 3.5.0), Matrix (>= 1.1.1)
 License: GPL (>= 2)
 Imports: stats, graphics, grDevices
 Suggests: parallel, LMMsolver, sommer, RSpectra, pedigreemm
+=======
+Package: cgiarBase
+Type: Package
+Title: Base functions for biometrics analysis
+Version: 1.0.1
+Date: 2022-09-09
+Author: Giovanny Covarrubias-Pazaran, Ibnou Dieng, Khaled Al-Sham'aa, Angela Pacheco, Christian Cadena, Sergio Cruz
+Maintainer: Giovanny Covarrubias-Pazaran <covaruberpaz@gmail.com>
+Description: Software for analytical pipelines
+Depends: R (>= 3.5.0)
+License: GPL (>= 2)
+Imports: stats, graphics, grDevices
+Suggests: parallel
+>>>>>>> aa6d5fa2be186910d7900a7815662ab6fc119b5c

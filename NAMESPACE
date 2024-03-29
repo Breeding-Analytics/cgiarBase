@@ -1,8 +1,15 @@
 importFrom("grDevices", "dev.cur", "dev.new", "dev.next", "dev.set")
 importFrom("graphics", "axis", "lines", "par", "points", "title")
 importFrom("stats", "cov", "dist", "median", "model.matrix", "optimize", "pbeta", "ppoints", "predict", "smooth.spline","var")
+<<<<<<< HEAD
 export(
        staLMM, metLMM, indexDesire, baseIndex, ocs, rgg, pgg, newOutliersFun, singleCrossMat
        )
+=======
+export(cleanChar, cleanCharField,replaceValues, printTable, matToTab, tabToMat, fixCoords,
+       atcg1234, markerBackTransform, transMarkerSingle, asremlFormula, fillDesignSingle, geneticEvaluation3,
+       computeGenoModifications, applyGenoModifications, bindObjects, computePedModifications, gdiv, Biodv, forAMOVA,
+       nrm2, grm2, create_getData_object)
+>>>>>>> aa6d5fa2be186910d7900a7815662ab6fc119b5c
 
 
