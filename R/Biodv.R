@@ -5,8 +5,8 @@ Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1
 #userdir=.libPaths()[1]
 #if(!checkpack) suppressWarnings(install.packages(pack,lib=userdir))
 
-suppressWarnings(library(Hmisc))
-suppressWarnings(library(plotly))
+#suppressWarnings(library(Hmisc))
+#suppressWarnings(library(plotly))
 resulist=list()
 #######################################################
 id=as.data.frame(datos[,1])
@@ -182,7 +182,7 @@ colnames(exadivg)=c("Genotype","He","Ho","Ae","Shannon","rareness","%NA")
 resulist[[5]]=exadivg#write.csv(exadivg,"CalculusPerGenotype.csv",row.names=FALSE,quote=FALSE)
 rm(nacc1,nmark1,x2,exaidg,id1g,nhomg,refGenotype,heg,aeg,hog,shannong,noNA,rareness)
 
-library(car)
+#library(car)
 #out="SummaryDiversityAnalysis.csv"
 if("div"%in%ls()==TRUE){
 #cat("Diversity","\n","\n",file=out)
@@ -238,10 +238,9 @@ rm(aux,N,mds)
 ###For do dendograms and MDSgraph
 #########################################################################
 #########################################################################
-library(cluster)
-clust=agnes(mrdMAT, method = "ward")
+clust=cluster::agnes(mrdMAT, method = "ward")
 
-library(dendextend)
+#library(dendextend)
 coord1=as.data.frame(coord)
 names(coord1)=c("Factor1","Factor2","Factor3")
 resulist[[8]]=coord1#write.csv(coord1,"MDStable.csv",quote=FALSE)
