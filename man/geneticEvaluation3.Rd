@@ -5,7 +5,7 @@
 Genetic evaluation
 }
 \description{
-This function forms the mixed model equations develpoed by Henderson and solves the equations given the specified variance components.
+This function forms the mixed model equations developed by Henderson and solves the equations given the specified variance components.
 }
 \usage{
 geneticEvaluation3(fixed=NULL,random=NULL,rcov=NULL,weights=NULL, 
