@@ -1,23 +1,27 @@
 mlModel <- function(fixed, 
-               random=NULL, ginverse=NULL,
-               group, data,
-               markerEffects=TRUE,
-               yourLayers=NULL, epochs_M=50, 
-               batch_size=50,
-               returnMatrices=FALSE){
+                    random=NULL, ginverse=NULL,
+                    group, data,
+                    yourLayers=NULL, epochs_M=50, 
+                    batch_size=50,
+                    returnMatrices=FALSE){
   # print("usingML")
+  `%>%` <- dplyr::`%>%`
   ## get matrices for random terms
-  if(markerEffects){ # we are using rrBLUP
+  counter <- 1
+  if(!missing(group)){ # we are using rrBLUP
     Zlist <- list()
     for(iTerm in 1:length(group)){ # iTerm=1
-      Zlist[[iTerm]] <- as.matrix(data[,group[[iTerm]]])
+      Zlist[[counter]] <- as.matrix(data[,group[[iTerm]]])
+      counter <- counter + 1
     }
     names(Zlist) <- names(group)
-    Z <- do.call(cbind, Zlist)
-  }else{ # we are using GBLUP
+    # Z <- do.call(cbind, Zlist)
+  }else{Zlist <- list()}
+  
+  
+  if(!is.null(random)){
     randomTerms <- gsub(" ", "", strsplit(as.character(random[2]), split = "[+-]")[[1]])
-    Zlist <- list()
-    for(iTerm in randomTerms){ # iTerm <- randomTerms[2]
+    for(iTerm in randomTerms){ # iTerm <- randomTerms[1]
       Za <- Matrix::sparse.model.matrix(as.formula(paste("~",iTerm,"-1")), data)
       removeNames <- strsplit(iTerm,":")[[1]]
       for(iName in 1:length(removeNames)){
@@ -37,10 +41,16 @@ mlModel <- function(fixed,
         }
         Za <- Za[,colnames(ginverse$genoF)] %*% ginverse$genoF
       }
-      Zlist[[iTerm]] <- Za
+      Zlist[[counter]] <- Za
+      names(Zlist)[counter] <- iTerm
+      counter <- counter + 1
     }
-    Z <- do.call(cbind, Zlist)
   }
+  if(length(Zlist) == 0){
+    stop("Please fit a random formula or provide the grouping argument")
+  }
+  Z <- do.call(cbind, Zlist)
+  
   
   ## get response
   response <- strsplit(as.character(fixed[2]), split = "[+]")[[1]]
@@ -77,7 +87,7 @@ mlModel <- function(fixed,
     base_model <- input 
     for(iRow in 1:nrow(yourLayers)){ # iRow=1
       base_model <- base_model %>% keras::layer_dense(units = yourLayers[iRow,"units"], 
-                                               activation= yourLayers[iRow,"activation"] )%>%
+                                                      activation= yourLayers[iRow,"activation"] )%>%
         keras::layer_dropout(rate = yourLayers[iRow,"rate"] )
     }
     ## add output(s) units
@@ -88,17 +98,23 @@ mlModel <- function(fixed,
     # build multi-output model
     model <- keras::keras_model(input, outputs=yhatList ) %>%
       keras::compile(optimizer ="rmsprop",
-              loss="mse",
-              metrics="mae",
-              loss_weights=rep(1/nrow(yourLayers), nrow(yourLayers))
+                     loss="mse",
+                     metrics="mae",
+                     loss_weights=rep(1/nrow(yourLayers), nrow(yourLayers))
       )
     #fitmodel  # ?fit.keras.engine.training.Model
     model_fit <- model %>%
       keras::fit(x=W,
-          y=yvarList,
-          epochs=epochs_M,
-          batch_size = batch_size,
-          verbose=0)
+                 y=yvarList,
+                 epochs=epochs_M,
+                 batch_size = batch_size,
+                 verbose=0)
+    
+    # Yhat <-  predict(model, W) %>%
+    #   data.frame() %>%
+    #   setNames(colnames(yvar))
+    # plot(Yhat$predictedValue)
+    
     return(list(model_fit=model_fit,model=model))
   }
 }
