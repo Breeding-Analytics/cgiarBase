@@ -109,9 +109,8 @@ tryF=function(x,Limp1,Limp2,QCc1,QCc2,GmatFL1,GmatFL2,GmatFL3,GmatML1,GmatML2,Gm
 }
 
 #40 min more less
-library(pbapply)
-pboptions(type="timer",style=4)
-final1=data.frame(Tb1,t(data.frame(pbapply(Tb1,1,function(x) tryF(x,Limp1,Limp2,QCc1,QCc2,GmatFL1,GmatFL2,GmatFL3,GmatML1,GmatML2,GmatD_FL1,HetL1,HetF1,HetM1,Fimp1,Mimp1,QcTest,QcTestG1,QcTestG2)))))
+pbapply::pboptions(type="timer",style=4)
+final1=data.frame(Tb1,t(data.frame(pbapply::pbapply(Tb1,1,function(x) tryF(x,Limp1,Limp2,QCc1,QCc2,GmatFL1,GmatFL2,GmatFL3,GmatML1,GmatML2,GmatD_FL1,HetL1,HetF1,HetM1,Fimp1,Mimp1,QcTest,QcTestG1,QcTestG2)))))
 names(final1)[6:27]=c("QCPer_wrong","QCPer_wrong_class","LineImputed","Line_imputed_class","G_matrix_Line_Female","G_matrix_Line_Female_Class","G_matrix_Line_Male","G_matrix_Line_Male_Class","Hets_Line","Hets_Line_class","Hets_Female",
                       "Hets_Female_class","Hets_Male","Hets_Male_class","Diagonal_minus_Female_G_matrix","Diagonal_Female_G_matrix_class","Imputed_Female","Imputed_Female_class","Imputed_Male","Imputed_Male_class","Final_Classification","KEEP_0")
 rownames(final1)=NULL
