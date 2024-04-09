@@ -1,12 +1,4 @@
 Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3){
-
-#checkpack <- "pbkrtest"%in%rownames(installed.packages())
-#pack<-paste(dirApp,"/local/pbkrtest_0.4-6.zip",sep="")
-#userdir=.libPaths()[1]
-#if(!checkpack) suppressWarnings(install.packages(pack,lib=userdir))
-
-#suppressWarnings(library(Hmisc))
-#suppressWarnings(library(plotly))
 resulist=list()
 #######################################################
 id=as.data.frame(datos[,1])
@@ -82,8 +74,8 @@ rm(tmpmono)
 id1=exaid[,1]
 ######################################################
 #Calculate specificity
-cond1=which(datos$pest==0||is.na(datos$pest)==TRUE)
-cond2=which(datos$pest1==0||is.na(datos$pest1)==TRUE)
+cond1=which(datos$pest==0 | is.na(datos$pest)==TRUE)
+cond2=which(datos$pest1==0 | is.na(datos$pest1)==TRUE)
 longt=apply(datos[,1:nacc],1, length)-apply(datos[,1:nacc],1, function(y) length(which(is.na(y)==TRUE)))
 adif01<--(-1)*(apply((datos[,1:nacc]/datos$pest),1, function (y) sum(y*log(y,2),na.rm=T))/longt)
 adif02<--(-1)*(apply(((1-datos[,1:nacc])/datos$pest1),1, function (y) sum(y*log(y,2),na.rm=T))/longt)
