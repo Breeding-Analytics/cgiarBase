@@ -1,4 +1,31 @@
-Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3){
+Biodv=function(mydata,distk,nclust,dfenvbio){
+#Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3){
+
+	outFolder<-"BioAnalysis"
+    nall=2
+    #mydata=data()
+    datos<-t(as.data.frame(mydata$data$geno))
+	#distk<- as.character(input$distk)
+    typedata<- "SNP"
+    missval=0
+    mayorque=0.95
+    menorque=0.05
+    ht1=-1
+    ht2=0
+    ht3=1
+    datos=replace(datos,datos==ht1,99)
+	datos=replace(datos,datos==ht2,0.5)
+	datos=replace(datos,datos==ht3,999)
+	datos=replace(datos,datos==99,1)
+	datos=replace(datos,datos==999,0)
+	datos <- data.frame(datos)
+    dirfile=as.character(mydata$data$genodir)
+    nn=length(unlist((strsplit(dirfile,"[\\]"))))
+    filename=as.character(unlist((strsplit(dirfile,"[\\]")))[nn])
+    outFolder <- paste("DiversityAnalysis_",stringr::str_replace(filename,".csv",""),sep="")
+	file_name=stringr::str_replace(filename,".csv","")
+    #biodata=cgiarBase::Biodv(stringr::str_replace(filename,".csv",""),datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3)
+
 resulist=list()
 #######################################################
 id=as.data.frame(datos[,1])
@@ -232,15 +259,42 @@ rm(aux,N,mds)
 #########################################################################
 clust=cluster::agnes(mrdMAT, method = "ward")
 
-#library(dendextend)
+
 coord1=as.data.frame(coord)
 names(coord1)=c("Factor1","Factor2","Factor3")
-resulist[[8]]=coord1#write.csv(coord1,"MDStable.csv",quote=FALSE)
+resulist[[8]]=coord1
 
 names(resulist)=c("Repeated_Markers","Repeated_Genotypes","MarkOutFilterPoly","CalculusPerMarker","CalculusPerGenotype","SummaryDiversityAnalysis","Distance_Matrix","MDSTable")
 
 coord2=cbind(gen=rownames(coord),coord)
 names(coord2)=c("Gen","Factor1","Factor2","Factor3")
-res=list(as.data.frame(div),coord2, getwd(), clust, datos, mrdMAT, perctCP12, resulist)
+
+
+pp=as.data.frame(cutree(as.hclust(clust), k = nclust))
+TFArx=ape::as.phylo(as.hclust(clust))    
+groups=as.data.frame(pp)
+coord2=as.data.frame(resulist[["MDSTable"]])
+coord2=cbind(rownames(coord2),coord2)
+data1=as.data.frame(cbind(coord2,groups[,1]))
+names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust")
+data1$Factor1=as.numeric(as.character(data1$Factor1))
+data1$Factor2=as.numeric(as.character(data1$Factor2))
+data1$Factor3=as.numeric(as.character(data1$Factor3))
+data1$GroupClust=as.factor(as.character(data1$GroupClust))
+#Cuando se agrega un archivo para grupos externos
+if (!is.null(dfenvbio)){  
+  dfenvbio[,1]<-dfenvbio[,1]
+  indexCOV <- match(data1$Gen,as.character(dfenvbio[,1]))
+  if(length(indexCOV)>0)	dfenvbio <- dfenvbio[indexCOV,]
+  dfenvbio[,2] <- as.factor(dfenvbio[,2])
+  usenames=names(dfenvbio)[-1]
+  dfenvbio<-dfenvbio[match(data1$Gen,dfenvbio[,1]),]
+  for(i in 1:dim(dfenvbio)[2]){dfenvbio[,i]=as.factor(as.character(dfenvbio[,i]))}
+  data1<-cbind(data1,dfenvbio[,-1])
+  names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
+}
+
+res=list(datos, mrdMAT, perctCP12, resulist, data1,TFArx)
+#res=list(as.data.frame(div),coord2, getwd(), clust, datos, mrdMAT, perctCP12, resulist,data1,TFArx)
 return(res)
 }
