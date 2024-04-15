@@ -1,5 +1,5 @@
-\name{mlModel}
-\alias{mlModel}
+\name{mler}
+\alias{mler}
 
 \title{
 Machine learning model
@@ -8,7 +8,7 @@ Machine learning model
 This function forms the linear equations to fit a machine learning model based on back propagation using the keras and tensorflow libraries.
 }
 \usage{
-mlModel(fixed, 
+mler(fixed, 
         random=NULL, ginverse=NULL,
         group, data,
         yourLayers=NULL, epochs_M=50, 
@@ -83,7 +83,7 @@ Allaire J, Tang Y (2023). _tensorflow: R Interface to 'TensorFlow'_. R package v
 # GTi=A # t(chol(A))
 # ## model with markers
 # GTi <- apply(GT, 2, sommer::imputev)
-# 
+# `%>%` <- dplyr::`%>%`
 # 
 # DT2 <- cbind(DT, GTi[DT$designation,])
 # ncol(DT); ncol(DT2)
@@ -95,7 +95,7 @@ Allaire J, Tang Y (2023). _tensorflow: R Interface to 'TensorFlow'_. R package v
 # VP <- DT2[setdiff(1:nrow(DT2), ss),] # validation population
 # dim(TP); dim(VP)
 # # machine learning model using the grouping effect 
-# model1 <- mlModel(fixed= predictedValue~1,
+# model1 <- mler(fixed= predictedValue~1,
 #                   random=~1,
 #                   group=list(id=14:112),
 #                   ginverse=NULL,
@@ -103,7 +103,7 @@ Allaire J, Tang Y (2023). _tensorflow: R Interface to 'TensorFlow'_. R package v
 #                   yourLayers=myLayers, epochs_M=50,
 #                   batch_size=50, returnMatrices=FALSE)
 # # matrices for the validation population
-# mats <- mlModel(fixed= predictedValue~1,
+# mats <- mler(fixed= predictedValue~1,
 #                   random=~1,
 #                   ginverse=NULL,
 #                   group=list(id=14:112),

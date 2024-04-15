@@ -1,4 +1,4 @@
-mlModel <- function(fixed, 
+mler <- function(fixed, 
                     random=NULL, ginverse=NULL,
                     group, data,
                     yourLayers=NULL, epochs_M=50, 
