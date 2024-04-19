@@ -21,7 +21,7 @@ bindObjects <- function(
       for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) ){ # for each nested element   iSub=1
         if(names(mainElements)[iMain] == "data"){ # this are complex, data can be in completely different formats, column names, etc
           # we have to modify both data and metadata at the same time
-          if(subItems[iSub] %in% c("pheno","pedigree","weather","qtl") ){
+          if(subItems[iSub] %in% c("pheno","pedigree","qtl") ){
             # bind data tables
             provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno1)){
@@ -130,6 +130,9 @@ bindObjects <- function(
                 mainElements$metadata[[subItems[iSub]]] <- object2$metadata$geno
               }
             } # end of: if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) )
+          }else if(subItems[iSub] == "weather"){
+            mainElements$data[[subItems[iSub]]] <- unique( rbind(object1$data[[subItems[iSub]]], object2$data[[subItems[iSub]]] ) )
+            mainElements$metadata[[subItems[iSub]]] <- unique( rbind(object1$metadata[[subItems[iSub]]], object2$metadata[[subItems[iSub]]] ) )
           } # end of: if(subItems[iSub] %in% c("pheno","pedigree","weather","qtl") )
         }else if(names(mainElements)[iMain] == "modifications"){ #  modifications  can be easily binded, is just long format tables
           mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]][[subItems[iSub]]], object2[[names(mainElements)[iMain]]][[subItems[iSub]]] ) )
