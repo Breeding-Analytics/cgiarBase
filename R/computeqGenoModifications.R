@@ -27,7 +27,7 @@ computeGenoModifications <- function(
     modifications <- rbind(modifications, data.frame(module="qaGeno", analysisId=qamAnalysisId, reason="%missing", row=NA, col=badMarker, value=NA) )
   }
   ## identify bad MAF
-  MAF <- apply(M+1, 2, function(x) {
+  MAF <- apply(M, 2, function(x) {
     AF <- mean(x, na.rm = T)/ploidy
     MAF <- ifelse(AF > 0.5, 1 - AF, AF)
   })
@@ -38,7 +38,7 @@ computeGenoModifications <- function(
   ## heterozigosity per marker
   q <- MAF; p <- 1-q
   he <- 2 * p * q
-  ho <- colMeans((M+1) == 1, na.rm = TRUE) # Get the obseved heterozygosity.
+  ho <- colMeans((M) == 1, na.rm = TRUE) # Get the obseved heterozygosity.
   badMarker3 <- which(ho > propHetUpperThreshForMarker)
   if(length(badMarker3) > 0){
     modifications <- rbind(modifications, data.frame(module="qaGeno", analysisId=qamAnalysisId, reason="heterozygosity", row=NA, col=badMarker3, value=NA) )
