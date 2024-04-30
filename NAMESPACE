@@ -4,7 +4,7 @@ importFrom("stats", "cov", "dist", "median", "model.matrix", "optimize", "pbeta"
 importFrom("pbapply")
 export(cleanChar, cleanCharField,replaceValues, printTable, matToTab, tabToMat, fixCoords,
        atcg1234, markerBackTransform, transMarkerSingle, asremlFormula, fillDesignSingle, geneticEvaluation3,
-       computeGenoModifications, applyGenoModifications, bindObjects, computePedModifications, gdiv, Biodv, forAMOVA,
+       computeGenoModifications, applyGenoModifications, bindObjects, computePedModifications, Biodv, 
        nrm2, grm2, create_getData_object, mler)
 
 
