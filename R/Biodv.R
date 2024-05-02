@@ -290,8 +290,10 @@ if (!is.null(dfenvbio)){
   usenames=names(dfenvbio)[-1]
   dfenvbio<-dfenvbio[match(data1$Gen,dfenvbio[,1]),]
   for(i in 1:dim(dfenvbio)[2]){dfenvbio[,i]=as.factor(as.character(dfenvbio[,i]))}
-  data1<-cbind(data1,dfenvbio[,-1])
-  names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
+  if(dim(dfenvbio)[1]!=0){
+  	data1<-cbind(data1,dfenvbio[,-1])
+  	names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
+  }
 }
 	
     groups=as.data.frame(as.character(data1[,catv]))	        
