@@ -285,15 +285,15 @@ data1$GroupClust=as.factor(as.character(data1$GroupClust))
 if (!is.null(dfenvbio)){  
   dfenvbio[,1]<-dfenvbio[,1]
   indexCOV <- match(data1$Gen,as.character(dfenvbio[,1]))
+if(!all(is.na(indexCOV))){
   if(length(indexCOV)>0)	dfenvbio <- dfenvbio[indexCOV,]
   dfenvbio[,2] <- as.factor(dfenvbio[,2])
   usenames=names(dfenvbio)[-1]
   dfenvbio<-dfenvbio[match(data1$Gen,dfenvbio[,1]),]
   for(i in 1:dim(dfenvbio)[2]){dfenvbio[,i]=as.factor(as.character(dfenvbio[,i]))}
-  if(dim(dfenvbio)[1]!=0){
-  	data1<-cbind(data1,dfenvbio[,-1])
-  	names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
-  }
+  data1<-cbind(data1,dfenvbio[,-1])
+  names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
+ }  
 }
 	
     groups=as.data.frame(as.character(data1[,catv]))	        
