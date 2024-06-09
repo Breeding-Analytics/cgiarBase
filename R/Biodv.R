@@ -1,4 +1,4 @@
-Biodv=function(mydata,distk,nclust,dfenvbio){
+Biodv=function(mydata,distk,nclust,dfenvbio,catv){
 #Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3){
 
 	outFolder<-"BioAnalysis"
@@ -158,9 +158,9 @@ Inb=mean(inb)
 se_inb=sqrt(var(inb)/length(inb))
 PPoli=nm/nmark                                                ## Percentage of polymorphic loci
 div=t(t(c(PPoli,He, se_he, Ho, se_ho, Ae, se_ae, Shan, se_shan)))
-div=cbind(c("% of polymorphic loci","Expected Heterozygosity","Standar desviation for HE","Observed Heterozygosity", "Standar desviation for HO",
-             "Number of effective allele", "Standar desviation for Ae", "Shannon diversity Index",
-             "Standar desviation for ShanIn"),div)
+div=cbind(c("% of polymorphic loci","Expected Heterozygosity","Standard desviation for HE","Observed Heterozygosity", "Standard desviation for HO",
+             "Number of effective allele", "Standard desviation for Ae", "Shannon diversity Index",
+             "Standard desviation for ShanIn"),div)
 
 rm(Ae,ae,He,he,ho,Ho,Inb,inb,nhom,PPoli,refmark,se_ae,se_he,se_ho,se_inb,se_shan,Shan,shannon)
 
@@ -285,6 +285,7 @@ data1$GroupClust=as.factor(as.character(data1$GroupClust))
 if (!is.null(dfenvbio)){  
   dfenvbio[,1]<-dfenvbio[,1]
   indexCOV <- match(data1$Gen,as.character(dfenvbio[,1]))
+if(!all(is.na(indexCOV))){
   if(length(indexCOV)>0)	dfenvbio <- dfenvbio[indexCOV,]
   dfenvbio[,2] <- as.factor(dfenvbio[,2])
   usenames=names(dfenvbio)[-1]
@@ -292,9 +293,36 @@ if (!is.null(dfenvbio)){
   for(i in 1:dim(dfenvbio)[2]){dfenvbio[,i]=as.factor(as.character(dfenvbio[,i]))}
   data1<-cbind(data1,dfenvbio[,-1])
   names(data1)=c("Gen","Factor1","Factor2","Factor3","GroupClust",usenames)
+ }  
 }
-
-res=list(datos, mrdMAT, perctCP12, resulist, data1,TFArx)
+	
+    groups=as.data.frame(as.character(data1[,catv]))	        
+	rownames(groups)=data1[,1]       
+    agc.env=as.data.frame(as.numeric(groups[,1]))
+    names(agc.env)<-c("Pop")
+    agc.env$Pop<-as.factor(agc.env$Pop)	
+	agc.adonis <- vegan::adonis2(mrdMAT ~ Pop, data=agc.env, permutations=9999)
+     adonis.data <- data.frame(agc.adonis)
+     adonis.data$MS <- adonis.data$SumOfSqs / adonis.data$Df
+     pop.sizes <- table(agc.env$Pop)
+     n1 <- mean(pop.sizes)
+     # how much variance is detected at each stratification.
+     #Variations  Within samples
+     Sigma.withinSamples <- adonis.data["Residual", "MS"]
+     #Variations  Between samples
+     Sigma.betweenSamples <- (adonis.data[1, "MS"] - Sigma.withinSamples) / n1
+     Sigma.total <- Sigma.withinSamples + Sigma.betweenSamples
+     #Phi-pop-total
+     PHI.ST <- Sigma.betweenSamples / Sigma.total
+     variance=cbind(adonis.data[,c(1,2,6,4,5)],
+                    Sigma=c(Sigma.betweenSamples,Sigma.withinSamples,Sigma.total),
+                    PercVar=c(100*(Sigma.betweenSamples/Sigma.total),100*(Sigma.withinSamples/Sigma.total),100),
+                    Phi=c(PHI.ST,NA,NA)
+                    )
+    variance=cbind(c("Between Groups","Within Groups","Total"),variance)
+	colnames(variance)[1]=c("source")
+	
+res=list(datos, mrdMAT, perctCP12, resulist, data1,TFArx, variance)
 #res=list(as.data.frame(div),coord2, getwd(), clust, datos, mrdMAT, perctCP12, resulist,data1,TFArx)
 return(res)
 }

@@ -8,30 +8,24 @@
   Calculate heterozygosity (observed and expected), shannon index, number of effective allele, specificity, rareness,  percent of missing values, percent of polymorphic loci, Rogers distance, Nei distance, cluster analysis and multidimensional scaling.
 }
 \usage{
-  Biodv(file_name,datos,nall,distk,mayorque,menorque,missval)
+  Biodv(datos,distk,nclust,dfenvbio,catv)
 }
 
 \arguments{
-  \item{file_name}{
-    The name for the output files (character).
-  }
   \item{datos}{
     A dataframe in which columns are genotype information and in row marker information.
-  }
-  \item{nall}{
-    Numeric value for identify the number of alleles, by default is 2.
   }
   \item{distk}{
     "Rogers" or "Nei" for identify which distance will be calculated.
   }
-  \item{mayorque}{
-    A number between 0-1, upper limit for MAF.
+  \item{nclust}{
+    number of cluster that must be calculate
   }
-  \item{menorque}{
-    A number between 0-1, lower limit for MAF.
+  \item{dfenvbio}{
+    If the user add, a dataframe where the first column correspond to genotype name, in the second column the name of group that is associated to each genotype name. 
   }
-  \item{missval}{
-    A number between 0-1, delete genotypes that have more percent of missing values that the threshold
+  \item{catv}{
+    Name of the column used for be taken as grouping factor.
   }
 }
 
