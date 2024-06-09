@@ -215,21 +215,20 @@ asremlFormula <- function(fixed, random, rcov, dat, minRandomLevels=NULL, minRes
         x <- as.numeric(unlist(x[-1])) # new x just numbers
         
         if(perc.na(x) < 1){
-          onedup <- which(duplicated(x) | x == 0) # found a duplicated in that level of the random effect
+          onedup <- which(duplicated(x) | x == 0 | is.na(x) ) # found a duplicated in that level of the random effect
           if(length(onedup)>0){
-            #subidat <- dat[which(dat[,y[1]] == levused),] # data only for that levelof that random effect
-            dups <- which(x == x[onedup]) + 1 # factors duplicated, plus one because we removed the first column
+            dups <- which(x %in% x[onedup]) + 1 # factors duplicated, plus one because we removed the first column
             namedups <- y[dups]
             # loop to find if indeed they are the same plots or are different plots and just by chance have the same number
             coorcheck <- length(which(c(xCoordinate,yCoordinate) %in% namedups)) # if coordinates are matched these are ignored
             if(coorcheck == 2){
               return(x)
             }else{
-              x[which(duplicated(x) | x == 0)] <- NA; return(x)
+              x[which(duplicated(x) | x == 0 | is.na(x) )] <- NA; return(x)
             }
             
           }else{
-            x[which(duplicated(x) | x == 0)] <- NA; return(x)
+            x[which(duplicated(x) | x == 0 | is.na(x) )] <- NA; return(x)
           }
         }else{return(x)}#end of if perc.na < 1
         
