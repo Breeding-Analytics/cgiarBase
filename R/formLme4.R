@@ -115,10 +115,10 @@ formLme4 <- function(input0,object, analysisId){
               
               if(length(unique(na.omit(predictions[, newCol]))) > 1){
                 Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictions)
-                colnames(Z) <- gsub(newCol, "", colnames(Z))
+                colnames(Z) <- gsub(newCol, "L.", colnames(Z))
               }else{
                 Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictions))
-                colnames(Z) <- unique(na.omit(predictions[, newCol]))
+                colnames(Z) <- paste0("L.",unique(na.omit(predictions[, newCol])) )
               }
               for(j in 1:ncol(Z)){predictions[,colnames(Z)[j]] <- Z[,j]}
               formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
@@ -152,10 +152,10 @@ formLme4 <- function(input0,object, analysisId){
                 predictions[ which(predictions[,newCol] == ""), newCol] <- NA
                 if(length(unique(na.omit(predictions[, newCol]))) > 1){
                   Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictions)
-                  colnames(Z) <- gsub(newCol, "", colnames(Z))
+                  colnames(Z) <- gsub(newCol, "L.", colnames(Z))
                 }else{
                   Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictions))
-                  colnames(Z) <- unique(na.omit(predictions[, newCol]))
+                  colnames(Z) <- paste0( "L.", unique(na.omit(predictions[, newCol])) )
                 }
                 for(j in 1:ncol(Z)){predictions[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
