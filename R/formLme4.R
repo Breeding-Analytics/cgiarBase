@@ -1,9 +1,9 @@
-goodLevels <- function(object, analysisId){
+goodLevels <- function(object, analysisId, includeCovars=TRUE){
   '%!in%' <- function(x,y)!('%in%'(x,y))
   metaPheno <- object$metadata$pheno
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
   # add missing columns
-  keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
+  keep <- which( metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
   if(length(keep) > 0){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
@@ -30,6 +30,11 @@ goodLevels <- function(object, analysisId){
     for(iFactor in availableFactors){ # iFactor = availableFactors[1]
       if(length(na.omit(unique(provPred[,iFactor]))) > 1){factorPerTrait[[iTrait]] <- c(factorPerTrait[[iTrait]] , iFactor)}
     }
+    if(includeCovars){
+      for(iWeather in unique(weather$traitParameter)){ # iWeather = unique(weather$traitParameter)[1]
+        if( var(provPred[,iWeather], na.rm=TRUE ) > 0 ){ factorPerTrait[[iTrait]] <- c(factorPerTrait[[iTrait]] , iWeather) }
+      }
+    }
   }
   return(factorPerTrait)
 }
@@ -55,11 +60,12 @@ formLme4 <- function(input0,object, analysisId){
     predictions <- merge(predictions, tpe, by="environment", all.x = TRUE)
   }
   ## make the formula
+  columnClass <- unlist(lapply(predictions, class))
   formulas <- list()
-  for(i in 1:length(input0)){ # for each effect to fit
+  for(i in 1:length(input0)){ # for each effect to fit   i=1
     input <- input0[[i]]
     
-    if( is.null(input$left) ){
+    if( is.null(input$left) ){ # fixed effect
       
       if(input$center == ""){ # fixed effect
         if(is.null(input$right)){
@@ -100,25 +106,39 @@ formLme4 <- function(input0,object, analysisId){
           }
           
         }
-      }else{ # intercept with a factor column (just one)
+      }else{ # intercept with a factor or numeric column (just one)
         
         if(input$center == ""){
           warning(paste("The term",i, "will be ignored since it was misspecified. Intercept specified but no structure specified"))
         }else{ # |
+          
+          columnClassLeft <- columnClass[setdiff( input$left, c("0","1"))]
+          leftFactor <- names(columnClassLeft[which(columnClassLeft %in% c("character","factor") )])
+          leftNumeric <- names(columnClassLeft[which(columnClassLeft %in% c("integer","numeric") )])
+          
           newCol <- paste(input[["left"]], collapse = "_")
           if(newCol == "1"){ # simple structure
             formulas[[i]] <-  paste( "( ", newCol, input[["center"]], input[["right"]],")" )
           }else{ # complex structure
             if(input$nPC == 0){ # no FA
-              predictions[, newCol] <- apply( predictions[ , input[["left"]], drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-              predictions[ which(predictions[,newCol] == ""), newCol] <- NA
               
-              if(length(unique(na.omit(predictions[, newCol]))) > 1){
-                Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictions)
-                colnames(Z) <- gsub(newCol, "L.", colnames(Z))
+              if( length(leftFactor) > 0 ){  
+                predictions[, newCol] <- apply( predictions[ , input[["left"]], drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                predictions[ which(predictions[,newCol] == ""), newCol] <- NA
+                if(length(unique(na.omit(predictions[, newCol]))) > 1){
+                  Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictions)
+                  colnames(Z) <- gsub(newCol, "L.", colnames(Z))
+                }else{
+                  Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictions))
+                  colnames(Z) <- paste0("L.",unique(na.omit(predictions[, newCol])) )
+                }
+                if( length(leftNumeric) > 0 ){  
+                  Z <- cbind(Z, predictions[, leftNumeric, drop=FALSE])
+                }
               }else{
-                Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictions))
-                colnames(Z) <- paste0("L.",unique(na.omit(predictions[, newCol])) )
+                if( length(leftNumeric) > 0 ){  
+                  Z <- predictions[, leftNumeric, drop=FALSE]
+                }
               }
               for(j in 1:ncol(Z)){predictions[,colnames(Z)[j]] <- Z[,j]}
               formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
@@ -143,11 +163,17 @@ formLme4 <- function(input0,object, analysisId){
           if(is.null(input$right)){ # no right side
             warning(paste("The term",i, "will be ignored since it was misspecified. Intercept and structure specified but no right side"))
           }else{
+            
+            columnClassLeft <- columnClass[setdiff( input$left, c("0","1"))]
+            leftFactor <- names(columnClassLeft[which(columnClassLeft %in% c("character","factor") )])
+            leftNumeric <- names(columnClassLeft[which(columnClassLeft %in% c("integer","numeric") )])
+            
             newCol <- paste( setdiff( input$left, c("0","1")) , collapse = "_")
-            if(newCol == "1"){ # simple structure
-              formulas[[i]] <-  paste( "( ", newCol, input[["center"]], input[["right"]],")" )
-            }else{ # complex structure
-              if(input$nPC == 0){ # no FA
+            # if(newCol == "1"){ # simple structure
+            #   formulas[[i]] <-  paste( "( ", newCol, input[["center"]], input[["right"]],")" )
+            # }else{ # complex structure
+            if(input$nPC == 0){ # no FA
+              if( length(leftFactor) > 0 ){  
                 predictions[, newCol] <- apply( predictions[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
                 predictions[ which(predictions[,newCol] == ""), newCol] <- NA
                 if(length(unique(na.omit(predictions[, newCol]))) > 1){
@@ -157,12 +183,20 @@ formLme4 <- function(input0,object, analysisId){
                   Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictions))
                   colnames(Z) <- paste0( "L.", unique(na.omit(predictions[, newCol])) )
                 }
-                for(j in 1:ncol(Z)){predictions[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
-              }else{ # FA model
-                formulas[[i]] <-  paste( "( 0 +", paste(paste0("PC",1:input$nPC), collapse = " + "), input[["center"]], input[["right"]],")" )
-              } # ond of nPC
-            } # end of complex structure
+                if( length(leftNumeric) > 0 ){  
+                  Z <- cbind(Z, predictions[, leftNumeric, drop=FALSE])
+                }
+              }else{
+                if( length(leftNumeric) > 0 ){  
+                  Z <- predictions[, leftNumeric, drop=FALSE]
+                }
+              }
+              for(j in 1:ncol(Z)){predictions[,colnames(Z)[j]] <- Z[,j]}
+              formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+            }else{ # FA model
+              formulas[[i]] <-  paste( "( 0 +", paste(paste0("PC",1:input$nPC), collapse = " + "), input[["center"]], input[["right"]],")" )
+            } # ond of nPC
+            # } # end of complex structure
             
           }# end of right-side exist
           
