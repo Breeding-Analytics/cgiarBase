@@ -83,7 +83,7 @@ formLme4 <- function(input0,object, analysisId, trait){
         
       }else if( length(input$left) == 1 ){ # only one term in the left side of the equation
         
-        if(input$left == "0"){ # invalid
+        if(input$left == "0"){ # invalid intercept
           warning(paste("The term",i, "will be ignored since it was misspecified. Empty in both sides of the equation"))
         }else if(input$left == "1"){ # simple intercept
           if(input$center == ""){
@@ -93,24 +93,24 @@ formLme4 <- function(input0,object, analysisId, trait){
             warning(paste("The term",i, "will shift from || to | since it was misspecified."))
           }else{ # |
             
-            newCol <- paste(input[["left"]], collapse = "_")
-            if(newCol == "1"){ # simple structure
-              formulas[[i]] <-  paste( "( ", newCol, input[["center"]], input[["right"]],")" )
+            newLeftCol <- paste(input[["left"]], collapse = "_")
+            if(newLeftCol == "1"){ # simple structure
+              formulas[[i]] <-  paste( "( ", newLeftCol, input[["center"]], paste(input[["right"]], collapse=":") ,")" )
             }else{ # complex structure
               if(input$nPC == 0){ # no FA
-                predictionsTrait[, newCol] <- apply( predictionsTrait[ , input[["left"]] ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-                predictionsTrait[ which(predictionsTrait[,newCol] == ""), newCol] <- NA
-                Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictionsTrait)
-                colnames(Z) <- gsub(newCol, "", colnames(Z))
+                predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , input[["left"]] ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
+                Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
+                colnames(Z) <- gsub(newLeftCol, "", colnames(Z))
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
               }else{ # FA model
-                formulas[[i]] <-  paste( "( 0 +", paste(paste0("PC",1:input$nPC), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <-  paste( "( 0 +", paste(paste0("PC",1:input$nPC), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
               }
             }
             
           }
-        }else{ # factor or numeric column (just one)
+        }else{ # complex intercept (other than "1")
           
           if(input$center == ""){
             warning(paste("The term",i, "will be ignored since it was misspecified. Intercept specified but no structure specified"))
@@ -120,22 +120,22 @@ formLme4 <- function(input0,object, analysisId, trait){
             leftFactor <- names(columnClassLeft[which(columnClassLeft %in% c("character","factor") )])
             leftNumeric <- names(columnClassLeft[which(columnClassLeft %in% c("integer","numeric") )])
             
-            newCol <- paste(input[["left"]], collapse = "_")
+            newLeftCol <- paste(input[["left"]], collapse = "_")
             
-            if(newCol == "1"){ # simple structure
-              formulas[[i]] <-  paste( "( ", newCol, input[["center"]], input[["right"]],")" )
+            if(newLeftCol == "1"){ # simple structure
+              formulas[[i]] <-  paste( "( ", newLeftCol, input[["center"]], paste(input[["right"]], collapse=":") ,")" )
             }else{ # complex structure
               if(input$nPC == 0){ # no FA
                 
                 if( length(leftFactor) > 0 ){  
-                  predictionsTrait[, newCol] <- apply( predictionsTrait[ , input[["left"]], drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-                  predictionsTrait[ which(predictionsTrait[,newCol] == ""), newCol] <- NA
-                  if(length(unique(na.omit(predictionsTrait[, newCol]))) > 1){
-                    Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictionsTrait)
-                    colnames(Z) <- gsub(newCol, "L.", colnames(Z))
+                  predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , input[["left"]], drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                  predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
+                  if(length(unique(na.omit(predictionsTrait[, newLeftCol]))) > 1){
+                    Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
+                    colnames(Z) <- gsub(newLeftCol, "L.", colnames(Z))
                   }else{
                     Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictionsTrait))
-                    colnames(Z) <- paste0("L.",unique(na.omit(predictionsTrait[, newCol])) )
+                    colnames(Z) <- paste0("L.",unique(na.omit(predictionsTrait[, newLeftCol])) )
                   }
                   if( length(leftNumeric) > 0 ){  
                     Z <- cbind(Z, predictionsTrait[, leftNumeric, drop=FALSE])
@@ -146,22 +146,22 @@ formLme4 <- function(input0,object, analysisId, trait){
                   }
                 }
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
                 
               }else{ # FA model
                 
-                predictionsTrait[, newCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-                predictionsTrait[ which(predictionsTrait[,newCol] == ""), newCol] <- NA
+                predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
                 
-                H0 <- reshape(predictionsTrait[,c(input$right, newCol, "predictedValue" )], direction = "wide", idvar = input$right,
-                              timevar = newCol, v.names = "predictedValue", sep= "_")
+                H0 <- reshape(predictionsTrait[,c(input$right, newLeftCol, "predictedValue" )], direction = "wide", idvar = input$right,
+                              timevar = newLeftCol, v.names = "predictedValue", sep= "_")
                 H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
-                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newCol], H = H0, nPC = input$nPC)) )$Z
-                colnames(Z) <- paste(colnames(Z), newCol, sep="_")
+                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )$Z
+                colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
                 
               } # ond of nPC
             } # end of complex structure
@@ -169,7 +169,7 @@ formLme4 <- function(input0,object, analysisId, trait){
           
         }
         
-      }else{ # multiple terms in the left side
+      }else{ # multiple terms in the left side (intercepts)
         
         if( length( setdiff( input$left, c("0","1")) ) == 0 ){ # misspecified
           warning(paste("The term",i, "will be ignored since it was misspecified. Intercept 0 + 1 is not allowed"))
@@ -186,17 +186,17 @@ formLme4 <- function(input0,object, analysisId, trait){
               leftFactor <- names(columnClassLeft[which(columnClassLeft %in% c("character","factor") )])
               leftNumeric <- names(columnClassLeft[which(columnClassLeft %in% c("integer","numeric") )])
               
-              newCol <- paste( setdiff( input$left, c("0","1")) , collapse = "_")
+              newLeftCol <- paste( setdiff( input$left, c("0","1")) , collapse = "_")
               if(input$nPC == 0){ # no FA
                 if( length(leftFactor) > 0 ){  
-                  predictionsTrait[, newCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-                  predictionsTrait[ which(predictionsTrait[,newCol] == ""), newCol] <- NA
-                  if(length(unique(na.omit(predictionsTrait[, newCol]))) > 1){
-                    Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newCol,"-1")), na.action = na.pass, data=predictionsTrait)
-                    colnames(Z) <- gsub(newCol, "L.", colnames(Z))
+                  predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                  predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
+                  if(length(unique(na.omit(predictionsTrait[, newLeftCol]))) > 1){
+                    Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
+                    colnames(Z) <- gsub(newLeftCol, "L.", colnames(Z))
                   }else{
                     Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictionsTrait))
-                    colnames(Z) <- paste0( "L.", unique(na.omit(predictionsTrait[, newCol])) )
+                    colnames(Z) <- paste0( "L.", unique(na.omit(predictionsTrait[, newLeftCol])) )
                   }
                   if( length(leftNumeric) > 0 ){  
                     Z <- cbind(Z, predictionsTrait[, leftNumeric, drop=FALSE])
@@ -207,21 +207,21 @@ formLme4 <- function(input0,object, analysisId, trait){
                   }
                 }
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":"),")" )
               }else{ # FA model
                 
-                predictionsTrait[, newCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
-                predictionsTrait[ which(predictionsTrait[,newCol] == ""), newCol] <- NA
+                predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
                 
-                H0 <- reshape(predictionsTrait[,c(input$right, newCol, "predictedValue" )], direction = "wide", idvar = input$right,
-                              timevar = newCol, v.names = "predictedValue", sep= "_")
+                H0 <- reshape(predictionsTrait[,c(input$right, newLeftCol, "predictedValue" )], direction = "wide", idvar = input$right,
+                              timevar = newLeftCol, v.names = "predictedValue", sep= "_")
                 H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
-                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newCol], H = H0, nPC = input$nPC)) )$Z
-                colnames(Z) <- paste(colnames(Z), newCol, sep="_")
+                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )$Z
+                colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
-                formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], input[["right"]],")" )
+                formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
                 
               } # ond of nPC
               # } # end of complex structure
