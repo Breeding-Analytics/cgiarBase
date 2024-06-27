@@ -157,7 +157,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                               timevar = newLeftCol, v.names = "predictedValue", sep= "_")
                 H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
-                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )$Z
+                Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
                 colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
@@ -217,7 +217,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                               timevar = newLeftCol, v.names = "predictedValue", sep= "_")
                 H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
-                Z <- with(predictionsTrait, lme4breeding::dsc(lme4breeding::rrc(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )$Z
+                Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
                 colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
