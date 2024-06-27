@@ -23,12 +23,14 @@ bindObjects <- function(
           # we have to modify both data and metadata at the same time
           if(subItems[iSub] %in% c("pheno","pedigree","qtl") ){
             # bind data tables
+            object1$metadata[[subItems[iSub]]] <- object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter != ""  & object1$metadata[[subItems[iSub]]]$value != "" ),]
             provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno1)){
               colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
                                                                Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"],
                                                                Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter != "trait"])
             }
+            object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter != ""  & object2$metadata[[subItems[iSub]]]$value != "" ),]
             provPheno2 <- object2$data[[subItems[iSub]]][ ,object2$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno2)){
               colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2),
