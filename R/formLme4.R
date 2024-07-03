@@ -11,8 +11,8 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
     predictions <- merge(predictions, tpe, by="environment", all.x = TRUE)
   }
   # add missing weather
-  weather <- object$metadata$weather
-  if(!is.null(weather)){
+  weather <- cgiarPipeline::summaryWeather(object)# object$metadata$weather
+  if(nrow(weather) > 0){
     weather$traitParameter <- paste(weather$trait, weather$parameter, sep="_")
     wide <- reshape(weather[,-which(colnames(weather)%in%c("trait","parameter"))], direction = "wide", idvar = "environment",
                     timevar = c("traitParameter"), v.names = "value", sep= "_")
@@ -42,10 +42,10 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
 formLme4 <- function(input0,object, analysisId, trait){
   # if(is.null(metaPheno)){stop("Metadata for phenotypes needs to be provided.", call. = FALSE)}
   metaPheno <- object$metadata$pheno
-  weather <- object$metadata$weather
+  weather <- cgiarPipeline::summaryWeather(object)# object$metadata$weather # object$metadata$weather
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
   '%!in%' <- function(x,y)!('%in%'(x,y))
-  if(!is.null(weather)){
+  if(nrow(weather) > 0){
     weather$traitParameter <- paste(weather$trait, weather$parameter, sep="_")
     wide <- reshape(weather[,-which(colnames(weather)%in%c("trait","parameter"))], direction = "wide", idvar = "environment",
                     timevar = c("traitParameter"), v.names = "value", sep= "_")

@@ -23,14 +23,14 @@ create_getData_object <- function() {
                                   refAllele = character(),
                                   altAllele = character())
   
-  obj$metadata$pedigree <- data.frame()
+  obj$metadata$pedigree <- data.frame(parameter = character(),
+                                      value = double())
   
-  obj$metadata$weather <- data.frame(environment = character(),
-                                     trait=character(),
-                                     parameter = character(),
+  obj$metadata$weather <- data.frame(parameter = character(),
                                      value = double())
   
-  obj$metadata$qtl <- data.frame()
+  obj$metadata$qtl <- data.frame(parameter = character(),
+                                 value = double())
   
   obj$modifications$pheno <- data.frame(module = character(),
                                         analysisId = character(),
