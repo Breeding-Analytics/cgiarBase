@@ -2,6 +2,12 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
   '%!in%' <- function(x,y)!('%in%'(x,y))
   metaPheno <- object$metadata$pheno
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
+  
+  # lapply()
+  # for(iVar in metaPheno$value){
+  #   
+  # }
+  # gsub(" ","",predictions$environment)
   # add missing columns
   keep <- which( metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
   if(length(keep) > 0){
@@ -102,6 +108,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                 predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
                 Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
                 colnames(Z) <- gsub(newLeftCol, "", colnames(Z))
+                colnames(Z) <- gsub(" ","", colnames(Z))
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
               }else{ # FA model
@@ -133,16 +140,20 @@ formLme4 <- function(input0,object, analysisId, trait){
                   if(length(unique(na.omit(predictionsTrait[, newLeftCol]))) > 1){
                     Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
                     colnames(Z) <- gsub(newLeftCol, "L.", colnames(Z))
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }else{
                     Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictionsTrait))
                     colnames(Z) <- paste0("L.",unique(na.omit(predictionsTrait[, newLeftCol])) )
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                   if( length(leftNumeric) > 0 ){  
                     Z <- cbind(Z, predictionsTrait[, leftNumeric, drop=FALSE])
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                 }else{
                   if( length(leftNumeric) > 0 ){  
                     Z <- predictionsTrait[, leftNumeric, drop=FALSE]
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                 }
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
@@ -159,6 +170,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
                 Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
                 colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
+                colnames(Z) <- gsub(" ","", colnames(Z))
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
@@ -194,16 +206,20 @@ formLme4 <- function(input0,object, analysisId, trait){
                   if(length(unique(na.omit(predictionsTrait[, newLeftCol]))) > 1){
                     Z <- Matrix::sparse.model.matrix(as.formula(paste("~", newLeftCol,"-1")), na.action = na.pass, data=predictionsTrait)
                     colnames(Z) <- gsub(newLeftCol, "L.", colnames(Z))
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }else{
                     Z <- Matrix::Matrix(1,ncol=1,nrow=nrow(predictionsTrait))
                     colnames(Z) <- paste0( "L.", unique(na.omit(predictionsTrait[, newLeftCol])) )
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                   if( length(leftNumeric) > 0 ){  
                     Z <- cbind(Z, predictionsTrait[, leftNumeric, drop=FALSE])
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                 }else{
                   if( length(leftNumeric) > 0 ){  
                     Z <- predictionsTrait[, leftNumeric, drop=FALSE]
+                    colnames(Z) <- gsub(" ","", colnames(Z))
                   }
                 }
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
@@ -219,7 +235,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
                 Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
                 colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
-                
+                colnames(Z) <- gsub(" ","", colnames(Z))
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
                 
