@@ -58,7 +58,7 @@ formLme4 <- function(input0,object, analysisId, trait){
     colnames(wide) <- gsub("value_","",colnames(wide))
     predictions <- merge(predictions, wide, by="environment", all.x = TRUE)
   }
-  keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
+  keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock","entryType") )
   if(length(keep) > 0){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
