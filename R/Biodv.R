@@ -10,8 +10,8 @@ Biodv=function(mydata,distk,nclust,dfenvbio,catv){
     missval=0
     mayorque=0.95
     menorque=0.05
-    ht1=-1
-    ht2=0
+    ht1=0
+    ht2=2
     ht3=1
     datos=replace(datos,datos==ht1,99)
 	datos=replace(datos,datos==ht2,0.5)
@@ -51,7 +51,6 @@ if (length(dupm)!=0){
 
 idG=as.data.frame(colnames(datos))
 colnames(idG)=c("Genotypes")
-#save(bymark,id,idG, bygen,file="chech.RData")
 
 dupg = duplicated(bygen) | duplicated(bygen, fromLast = T)
 dupg=split(which(dupg), bygen[dupg,])
@@ -60,16 +59,18 @@ if (length(dupg)!=0){
 	max.lengthg <- max(sapply(dupg, length))
 	dupg <- lapply(dupg, function(v) { c(v, rep(NA, max.lengthg-length(v)))})
 	reptgen=data.frame(do.call(rbind, dupg))
-	resulist[[2]]=reptgen
-	#write.csv(reptgen,paste("GenotypesRep_",file_name,".csv",sep=""),row.names=F)
+	resulist[[2]]=reptgen	
 }else {resulist[[2]]=NULL}
 
 #######################################################
 ## do the filters for missing values in genotypes
-if (missval!=0){
 missgen=apply(datos,2,function(y) 2*sum(is.na(y))/(nall*nrow(datos)))
-datos=datos[,which(missgen<missval)]
-}
+datos=datos[,-which(missgen>0.95)]
+  
+missmark=apply(datos,1,function(y) 2*sum(is.na(y))/(nall*nrow(datos)))
+datos=datos[-which(missmark>0.95),]
+id=data.frame(id[-which(missmark>0.95),1])
+  
 nacc=ncol(datos)
 nalle=nall*nrow(datos)
 nmark=nrow(datos)
