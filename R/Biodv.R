@@ -65,7 +65,7 @@ if (length(dupg)!=0){
 #######################################################
 ## do the filters for missing values in genotypes
 missgen=apply(datos,2,function(y) 2*sum(is.na(y))/(nall*nrow(datos)))
-datos=datos[,-which(missgen>0.95)]
+if(length(which(missgen>0.95))!=0){datos=datos[,-which(missgen>0.95)]}
   
 nacc=ncol(datos)
 nalle=nall*nrow(datos)
