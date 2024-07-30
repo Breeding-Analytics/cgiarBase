@@ -67,10 +67,6 @@ if (length(dupg)!=0){
 missgen=apply(datos,2,function(y) 2*sum(is.na(y))/(nall*nrow(datos)))
 datos=datos[,-which(missgen>0.95)]
   
-missmark=apply(datos,1,function(y) 2*sum(is.na(y))/(nall*nrow(datos)))
-datos=datos[-which(missmark>0.95),]
-id=data.frame(id[-which(missmark>0.95),1])
-  
 nacc=ncol(datos)
 nalle=nall*nrow(datos)
 nmark=nrow(datos)
