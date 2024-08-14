@@ -2,12 +2,6 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
   '%!in%' <- function(x,y)!('%in%'(x,y))
   metaPheno <- object$metadata$pheno
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
-  
-  # lapply()
-  # for(iVar in metaPheno$value){
-  #   
-  # }
-  # gsub(" ","",predictions$environment)
   # add missing columns
   keep <- which( metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
   if(length(keep) > 0){
@@ -25,8 +19,9 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
     colnames(wide) <- gsub("value_","",colnames(wide))
     predictions <- merge(predictions, wide, by="environment", all.x = TRUE)
   }
+  
   # extract
-  availableTraits <- metaPheno[which(metaPheno$parameter %in% c("trait")),"value"]
+  availableTraits <- intersect( metaPheno[which(metaPheno$parameter %in% c("trait")),"value"], unique(predictions$trait) )
   factorPerTrait <- vector(mode="list", length = length(availableTraits)); names(factorPerTrait) <- availableTraits
   availableFactors <- metaPheno[which(metaPheno$parameter %in% c("environment","year","season","location","trial","study","management")),"parameter"]
   
@@ -66,7 +61,7 @@ formLme4 <- function(input0,object, analysisId, trait){
     predictions <- merge(predictions, tpe, by="environment", all.x = TRUE)
   }
   ## make the formula
-  availableTraits <- metaPheno[which(metaPheno$parameter %in% c("trait")),"value"]
+  availableTraits <- intersect( metaPheno[which(metaPheno$parameter %in% c("trait")),"value"], unique(predictions$trait) )
   form <- preds <- list()
   for(iTrait in availableTraits){ # iTrait = availableTraits[1]
     predictionsTrait <- predictions[which(predictions$trait == iTrait),]
