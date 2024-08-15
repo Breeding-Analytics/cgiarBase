@@ -266,5 +266,5 @@ formLme4 <- function(input0,object, analysisId, trait){
     loadingsTraits[[iTrait]] <- loadingsEffects
   }
   newPredictions <- do.call(rbind, preds)
-  return(list(form=form, predictions=newPredictions, input=input0))
+  return(list(form=form, predictions=newPredictions, input=input0, loadingsTraits=loadingsTraits))
 }
