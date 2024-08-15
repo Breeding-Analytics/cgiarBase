@@ -62,11 +62,11 @@ formLme4 <- function(input0,object, analysisId, trait){
   }
   ## make the formula
   availableTraits <- intersect( metaPheno[which(metaPheno$parameter %in% c("trait")),"value"], unique(predictions$trait) )
-  form <- preds <- list()
+  form <- preds <- loadingsTraits <- list()
   for(iTrait in availableTraits){ # iTrait = availableTraits[1]
     predictionsTrait <- predictions[which(predictions$trait == iTrait),]
     columnClass <- unlist(lapply(predictionsTrait, class))
-    formulas <- list()
+    formulas <- loadingsEffects <- list()
     for(i in 1:length(input0)){ # for each effect to fit   i=1
       input <- input0[[i]]
       
@@ -163,13 +163,16 @@ formLme4 <- function(input0,object, analysisId, trait){
                               timevar = newLeftCol, v.names = "predictedValue", sep= "_")
                 H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
                 colnames(H0) <- gsub("predictedValue_","",colnames(H0))
-                Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
+                
+                rrFactor <- lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC, returnGamma = TRUE)
+                
+                Z <- with(predictionsTrait, lme4breeding::smm( rrFactor$Zstar ) )
                 colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
                 colnames(Z) <- gsub(" ","", colnames(Z))
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
-                
+                loadingsEffects[[i]] <- rrFactor$Gamma
               } # ond of nPC
             } # end of complex structure
           }# end of | structure
@@ -247,6 +250,7 @@ formLme4 <- function(input0,object, analysisId, trait){
     } # end of for each effect
     form[[iTrait]] <- paste( unique(unlist(formulas)), collapse = " + ")
     preds[[iTrait]] <- predictionsTrait
+    loadingsTraits[[iTrait]] <- loadingsEffects
   }
   newPredictions <- do.call(rbind, preds)
   return(list(form=form, predictions=newPredictions, input=input0))
