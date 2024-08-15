@@ -107,6 +107,19 @@ formLme4 <- function(input0,object, analysisId, trait){
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <-  paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
               }else{ # FA model
+                
+                predictionsTrait[, newLeftCol] <- apply( predictionsTrait[ , setdiff( input$left, c("0","1")), drop=FALSE ] , 1 , function(x){paste(na.omit(x), collapse = "-")}  )
+                predictionsTrait[ which(predictionsTrait[,newLeftCol] == ""), newLeftCol] <- NA
+                
+                H0 <- reshape(predictionsTrait[,c(input$right, newLeftCol, "predictedValue" )], direction = "wide", idvar = input$right,
+                              timevar = newLeftCol, v.names = "predictedValue", sep= "_")
+                H0 <- apply(H0[,2:ncol(H0),drop=FALSE],2,sommer::imputev)
+                colnames(H0) <- gsub("predictedValue_","",colnames(H0))
+                Z <- with(predictionsTrait, lme4breeding::smm(lme4breeding::rrm(predictionsTrait[,newLeftCol], H = H0, nPC = input$nPC)) )
+                colnames(Z) <- paste(colnames(Z), newLeftCol, sep="_")
+                colnames(Z) <- gsub(" ","", colnames(Z))
+                for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
+                
                 formulas[[i]] <-  paste( "( 0 +", paste(paste0("PC",1:input$nPC), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
               }
             }
