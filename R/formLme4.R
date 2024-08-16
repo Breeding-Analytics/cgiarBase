@@ -185,7 +185,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                 
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
-                loadingsEffects[[i]] <- rrFactor$Gamma
+                loadingsEffects[[paste(input[["right"]], collapse=":")]] <- rrFactor$Gamma
               } # ond of nPC
             } # end of complex structure
           }# end of | structure
@@ -249,7 +249,7 @@ formLme4 <- function(input0,object, analysisId, trait){
                 colnames(Z) <- gsub(" ","", colnames(Z))
                 for(j in 1:ncol(Z)){predictionsTrait[,colnames(Z)[j]] <- Z[,j]}
                 formulas[[i]] <- paste( "( 0 +", paste(colnames(Z), collapse = " + "), input[["center"]], paste(input[["right"]], collapse=":") ,")" )
-                
+                loadingsEffects[[paste(input[["right"]], collapse=":")]] <- rrFactor$Gamma
               } # ond of nPC
               # } # end of complex structure
               
