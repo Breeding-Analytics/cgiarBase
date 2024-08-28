@@ -1,6 +1,6 @@
 # Function to give format to a data.frame
-round.df <- function(DT, numRound) {
-  data.frame(lapply(X = DT,
+roundDF <- function(dataFrame, numRound) {
+  data.frame(lapply(X = dataFrame,
                     FUN = function(x) {
                       if(is.numeric(x)){
                         n1 <- lapply(x, function(x) nchar(strsplit(as.character(x), "\\.")[[1]][1]))
@@ -24,8 +24,8 @@ round.df <- function(DT, numRound) {
 }
 
 # Function to give format to a datatable
-round.dt <- function(table, numRound) {
-  x <- table$x$data
+roundDT <- function(dataTable, numRound) {
+  x <- dataTable$x$data
   numericColNames <- unlist(lapply(x, is.numeric))
   for (i in 1:length(numericColNames)) {
     if (numericColNames[i]) {
@@ -33,11 +33,11 @@ round.dt <- function(table, numRound) {
       n1 <- unlist(n1)
       for (j in 1:dim(x)[1]) {
         if (n1[j] >= numRound)
-          table$x$data[j, names(numericColNames[i])] <- round(x[j, names(numericColNames[i])], 0)
+          dataTable$x$data[j, names(numericColNames[i])] <- round(x[j, names(numericColNames[i])], 0)
         if (n1[j] < numRound)
-          table$x$data[j, names(numericColNames[i])] <- signif(x[j, names(numericColNames[i])], numRound)
+          dataTable$x$data[j, names(numericColNames[i])] <- signif(x[j, names(numericColNames[i])], numRound)
       }
     }
   }
-  table
+  dataTable
 }
