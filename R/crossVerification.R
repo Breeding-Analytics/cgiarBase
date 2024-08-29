@@ -54,7 +54,7 @@ crossVerification <- function(Mf,Mm,Mp,
   res <- data.frame(designation=rownames(Mp),probMatch,heteroMp,heteroMexp,heteroDeviation,propComplete)
   rownames(res) <- NULL
   # compute metrics for markers
-  return(list(metricsInd=res,matchMat=resultMatch))
+  return(list(metricsInd=res,matchMat=resultMatch,Mprogeny=Mp, Mfemale=Mf, Mmale=Mm, Mexpected=Mexp))
   
 }
 
