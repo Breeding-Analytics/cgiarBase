@@ -43,7 +43,9 @@ crossVerification <- function(Mf,Mm,Mp,
   # specific cases and assign directly a 0.25 probability
   # we get a 0.25, it is a match but we have some uncertainty
   doubleHets <- which(as.matrix(Mexp) == (1*(ploidy/2)), arr.ind = TRUE)
-  if(nrow(doubleHets) > 0){resultMatch[doubleHets]=0.25}
+  if(nrow(doubleHets) > 0){
+    resultMatch[doubleHets]=  ((1 - abs(resultMatch[doubleHets] - (ploidy/2) ))+1) * 0.25
+  }
   
   # compute metrics for individuals
   probMatch <- apply(resultMatch,1,function(x){sum(x)/length(x)})  # proportion of markers matching
