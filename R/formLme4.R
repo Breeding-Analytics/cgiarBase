@@ -8,10 +8,15 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
     colnames(tpe) <- cgiarBase::replaceValues(colnames(tpe), Search = metaPheno$value, Replace = metaPheno$parameter )
+    for(iCol in 1:ncol(tpe)){
+      tpe[,iCol] <- gsub("[[:punct:]]", "", tpe[,iCol] )
+    }
+    predictions[,"environment"] <- gsub("[[:punct:]]", "", predictions[,"environment"] )
     predictions <- merge(predictions, tpe, by="environment", all.x = TRUE)
   }
   # add missing weather
   weather <- cgiarPipeline::summaryWeather(object)# object$metadata$weather
+  weather[,"environment"] <- gsub("[[:punct:]]", "", weather[,"environment"] )
   weather$trait <- gsub(" ","",gsub("[[:punct:]]", "", weather$trait))
   if(nrow(weather) > 0){
     weather$traitParameter <- paste(weather$trait, weather$parameter, sep="_")
@@ -45,6 +50,7 @@ formLme4 <- function(input0,object, analysisId, trait){
   # if(is.null(metaPheno)){stop("Metadata for phenotypes needs to be provided.", call. = FALSE)}
   metaPheno <- object$metadata$pheno
   weather <- cgiarPipeline::summaryWeather(object)# object$metadata$weather # object$metadata$weather
+  weather[,"environment"] <- gsub("[[:punct:]]", "", weather[,"environment"] )
   weather$trait <- gsub(" ","",gsub("[[:punct:]]", "", weather$trait))
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
   '%!in%' <- function(x,y)!('%in%'(x,y))
@@ -60,6 +66,10 @@ formLme4 <- function(input0,object, analysisId, trait){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
     colnames(tpe) <- cgiarBase::replaceValues(colnames(tpe), Search = metaPheno$value, Replace = metaPheno$parameter )
+    for(iCol in 1:ncol(tpe)){
+      tpe[,iCol] <- gsub("[[:punct:]]", "", tpe[,iCol] )
+    }
+    predictions[,"environment"] <- gsub("[[:punct:]]", "", predictions[,"environment"] )
     predictions <- merge(predictions, tpe, by="environment", all.x = TRUE)
   }
   ## make the formula
