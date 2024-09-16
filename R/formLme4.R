@@ -3,7 +3,7 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
   metaPheno <- object$metadata$pheno
   predictions <- object$predictions[which(object$predictions$analysisId == analysisId ),]
   # add missing columns
-  keep <- which( metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock") )
+  keep <- which( metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock","gid") )
   if(length(keep) > 0){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
@@ -55,7 +55,7 @@ formLme4 <- function(input0,object, analysisId, trait){
     colnames(wide) <- gsub("value_","",colnames(wide))
     predictions <- merge(predictions, wide, by="environment", all.x = TRUE)
   }
-  keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock","entryType") )
+  keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock","entryType","gid") )
   if(length(keep) > 0){
     toExtractFromData <- metaPheno[keep, "value"]
     tpe <- unique(object$data$pheno[,c("environment",toExtractFromData)])
