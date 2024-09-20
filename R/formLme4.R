@@ -23,6 +23,7 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
     wide <- reshape(weather[,-which(colnames(weather)%in%c("trait","parameter"))], direction = "wide", idvar = "environment",
                     timevar = c("traitParameter"), v.names = "value", sep= "_")
     colnames(wide) <- gsub("value_","",colnames(wide))
+    predictions[,"environment"] <- gsub("[[:punct:]]", "", predictions[,"environment"] )
     predictions <- merge(predictions, wide, by="environment", all.x = TRUE)
   }
 
@@ -59,6 +60,7 @@ formLme4 <- function(input0,object, analysisId, trait){
     wide <- reshape(weather[,-which(colnames(weather)%in%c("trait","parameter"))], direction = "wide", idvar = "environment",
                     timevar = c("traitParameter"), v.names = "value", sep= "_")
     colnames(wide) <- gsub("value_","",colnames(wide))
+    predictions[,"environment"] <- gsub("[[:punct:]]", "", predictions[,"environment"] )
     predictions <- merge(predictions, wide, by="environment", all.x = TRUE)
   }
   keep <- which(metaPheno$parameter %!in% c("trait","designation","environment","rep","row","col","iBlock","entryType","gid") )
@@ -75,7 +77,7 @@ formLme4 <- function(input0,object, analysisId, trait){
   ## make the formula
   availableTraits <- intersect( metaPheno[which(metaPheno$parameter %in% c("trait")),"value"], unique(predictions$trait) )
   form <- preds <- loadingsTraits <- list()
-  for(iTrait in availableTraits){ # iTrait = availableTraits[1]
+  for(iTrait in trait){ # iTrait = availableTraits[1]
     predictionsTrait <- predictions[which(predictions$trait == iTrait),]
     columnClass <- unlist(lapply(predictionsTrait, class))
     formulas <- loadingsEffects <- list()
@@ -278,6 +280,16 @@ formLme4 <- function(input0,object, analysisId, trait){
     preds[[iTrait]] <- predictionsTrait
     loadingsTraits[[iTrait]] <- loadingsEffects
   }
-  newPredictions <- do.call(rbind, preds)
+  
+  allNames <- unique(unlist(lapply(preds, colnames)))
+  
+  preds2 <- lapply(preds, function(f){
+    newPredictions <- as.data.frame(matrix(NA, nrow=nrow(f), ncol=length(allNames)))
+    colnames(newPredictions) <- allNames
+    newPredictions[,colnames(f)] <- f
+    return(newPredictions)
+  })
+  
+  newPredictions <- do.call(rbind, preds2)
   return(list(form=form, predictions=newPredictions, input=input0, loadingsTraits=loadingsTraits))
 }
