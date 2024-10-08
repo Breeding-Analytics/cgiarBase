@@ -1,11 +1,6 @@
 Biodv=function(mydata,distk,nclust,dfenvbio,catv){
-#Biodv=function(file_name,datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3){
-
-	outFolder<-"BioAnalysis"
     nall=2
-    #mydata=data()
-    datos<-t(as.data.frame(mydata$data$geno))
-	#distk<- as.character(input$distk)
+    datos<-t(as.data.frame(mydata))
     typedata<- "SNP"
     missval=0
     mayorque=0.95
@@ -19,13 +14,7 @@ Biodv=function(mydata,distk,nclust,dfenvbio,catv){
 	datos=replace(datos,datos==99,1)
 	datos=replace(datos,datos==999,0)
 	datos <- data.frame(datos)
-    dirfile=as.character(mydata$data$genodir)
-    nn=length(unlist((strsplit(dirfile,"[\\]"))))
-    filename=as.character(unlist((strsplit(dirfile,"[\\]")))[nn])
-    outFolder <- paste("DiversityAnalysis_",stringr::str_replace(filename,".csv",""),sep="")
-	file_name=stringr::str_replace(filename,".csv","")
-    #biodata=cgiarBase::Biodv(stringr::str_replace(filename,".csv",""),datos,nall,distk,mayorque,menorque,missval,typedata,ht1,ht2,ht3)
-
+   
 resulist=list()
 #######################################################
 id=as.data.frame(datos[,1])
