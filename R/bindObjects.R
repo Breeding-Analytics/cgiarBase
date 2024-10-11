@@ -26,16 +26,20 @@ bindObjects <- function(
             object1$metadata[[subItems[iSub]]] <- object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter != ""  & object1$metadata[[subItems[iSub]]]$value != "" ),]
             provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno1)){
-              colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
-                                                               Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"],
-                                                               Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter != "trait"])
+              if(subItems[iSub] %in% c("pheno","pedigree") ){
+                colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
+                                                                 Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"],
+                                                                 Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter != "trait"])
+              }
             }
             object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter != ""  & object2$metadata[[subItems[iSub]]]$value != "" ),]
             provPheno2 <- object2$data[[subItems[iSub]]][ ,object2$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno2)){
+              if(subItems[iSub] %in% c("pheno","pedigree") ){
               colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2),
                                                                Search = object2$metadata[[subItems[iSub]]]$value[object2$metadata[[subItems[iSub]]]$parameter != "trait"],
                                                                Replace = object2$metadata[[subItems[iSub]]]$parameter[object2$metadata[[subItems[iSub]]]$parameter != "trait"])
+              }
             }
             allNames <- unique(c(colnames(provPheno1), colnames(provPheno2)))
             commonNames <- intersect(colnames(provPheno1), colnames(provPheno2)) #use intersect in a list of vectors
