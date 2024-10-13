@@ -59,11 +59,13 @@ bindObjects <- function(
             mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <- newData
             # update metadata
             newMetadata <- rbind(object1$metadata[[subItems[iSub]]],object2$metadata[[subItems[iSub]]])
-            traits <- newMetadata[which(newMetadata$parameter %in% "trait"),]; traits <- traits[which(!duplicated(traits$value)),]
+            traits <- newMetadata[which(newMetadata$parameter %in% c("trait")),]; traits <- traits[which(!duplicated(traits$value)),]
+            if(subItems[iSub] %in% c("pheno","pedigree") ){
             newMetadata <- newMetadata[which(!duplicated(newMetadata$parameter)),]
             newMetadata <- newMetadata[which(!newMetadata$parameter == "trait"),]
             newMetadata$value <- newMetadata$parameter
-            newMetadata <- rbind(newMetadata, traits)
+            }
+            newMetadata <- unique(rbind(newMetadata, traits))
             mainElements$metadata[[subItems[iSub]]] <- newMetadata
           }else if(subItems[iSub] == "geno"){ # if we need to fill the genotype slot
             if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) ){ # ifboth objects have genotype data
