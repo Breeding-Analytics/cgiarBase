@@ -30,7 +30,7 @@ goodLevels <- function(object, analysisId, includeCovars=TRUE){
   # extract
   availableTraits <- intersect( metaPheno[which(metaPheno$parameter %in% c("trait")),"value"], unique(predictions$trait) )
   factorPerTrait <- vector(mode="list", length = length(availableTraits)); names(factorPerTrait) <- availableTraits
-  availableFactors <- metaPheno[which(metaPheno$parameter %in% c("environment","year","season","location","trial","study","management")),"parameter"]
+  availableFactors <- metaPheno[which(metaPheno$parameter %in% c("environment","year","season","timepoint","location","trial","study","management")),"parameter"]
 
   for(iTrait in availableTraits){ # iTrait = availableTraits[1]
     provPred <- predictions[which(predictions$trait == iTrait),]
