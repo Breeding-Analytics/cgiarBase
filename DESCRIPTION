@@ -1,7 +1,7 @@
 Package: cgiarBase
 Type: Package
 Title: Base functions for biometrics analysis
-Version: 1.0.2
+Version: 1.0.3
 Date: 2024-04-04
 Author: Giovanny Covarrubias-Pazaran, Ibnou Dieng, Khaled Al-Sham'aa, Angela Pacheco, Christian Cadena, Sergio Cruz
 Maintainer: Giovanny Covarrubias-Pazaran <covaruberpaz@gmail.com>
