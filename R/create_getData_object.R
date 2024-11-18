@@ -87,7 +87,8 @@ create_getData_object <- function() {
                              value = character())
 
   obj$status <- data.frame(module = character(),
-                           analysisId = character())
+                           analysisId = character(),
+                           analysisIdName=character())
 
   return(obj)
 }
