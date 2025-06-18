@@ -13,6 +13,7 @@ bindObjects <- function(
   # names(mainElements) <- c("data", "metadata", "modifications")
   # mainElements$status <- mainElements$modeling <- mainElements$metrics <- mainElements$predictions <- data.frame()
   mainElements <- cgiarBase::create_getData_object()
+  '%!in%' <- function(x,y)!('%in%'(x,y))
   ###################################
   # loading the dataset
   for(iMain in 1:length(mainElements)){ #  for each element of data, metadata, modifications, modeling, status, etc ... bind   iMain=1
@@ -147,6 +148,22 @@ bindObjects <- function(
         }
       } # end of: for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) )
     }else{ # user wants to do a pure row bind (predictions, metrics, modeling, status tables)
+      if(names(mainElements)[iMain] == "status"){
+        if ("analysisIdName" %!in% colnames(object1[[names(mainElements)[iMain]]])){
+          object1[[names(mainElements)[iMain]]]$analysisIdName <- ""
+        }
+        if ("analysisIdName" %!in% colnames(object2[[names(mainElements)[iMain]]])){
+          object2[[names(mainElements)[iMain]]]$analysisIdName <- ""
+        }
+      } else if(names(mainElements)[iMain] == "predictions"){
+        if ("effectType" %!in% colnames(object1[[names(mainElements)[iMain]]])){
+          object1[[names(mainElements)[iMain]]]$effectType <- NA
+        }
+        if ("effectType" %!in% colnames(object2[[names(mainElements)[iMain]]])){
+          object2[[names(mainElements)[iMain]]]$effectType <- NA
+        }
+      }
+      
       mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
       # print(mainElements[[names(mainElements)[iMain]]])
       if(!is.null(mainElements[[names(mainElements)[iMain]]])){
