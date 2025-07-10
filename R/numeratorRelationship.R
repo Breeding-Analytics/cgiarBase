@@ -8,7 +8,7 @@ nrm2 <- function(
   ## IS USED IN THE BANAL APP UNDER THE STRUCTURE MODULES
   ############################
   # loading the dataset
-  if (is.null(pedData)) stop("No input marker data file specified.")
+  if (is.null(pedData)) stop("No input pedigree data file specified.")
   if (is.null(indivCol)) stop("Name of individual not specified. Please provide")
   if (is.null(damCol)) stop("Name of dam not specified. Please provide")
   if (is.null(sireCol)) stop("Name of sire not specified. Please provide")
