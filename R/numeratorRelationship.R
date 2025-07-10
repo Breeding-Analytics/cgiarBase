@@ -81,14 +81,18 @@ nrm2 <- function(
     return(A)
   }else{
     if(nrow(pedData) == length(which(is.na(pedData$dam)))){ # no pedigree information available
-      pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
+      pedtmp<-as.data.frame(cbind(ped@label,ped@dam,ped@sire))
+      pedtmp<-pedtmp[order(as.numeric(pedtmp[,1])),]      
+      pedChar <- data.frame(a=as.character(idsDfInverse[pedtmp[,1],]), 
                             b= NA,
                             c = NA
       )
     }else{
-      pedChar <- data.frame(a=as.character(idsDfInverse[,"ids"]), 
-                            b= as.character(idsDfInverse[ped@dam,]),
-                            c = as.character(idsDfInverse[ped@sire,])
+      pedtmp<-as.data.frame(cbind(ped@label,ped@dam,ped@sire))
+      pedtmp<-pedtmp[order(as.numeric(pedtmp[,1])),]      
+      pedChar <- data.frame(a=as.character(idsDfInverse[pedtmp[,1],]), 
+                            b= as.character(idsDfInverse[pedtmp[,2],]),
+                            c = as.character(idsDfInverse[pedtmp[,3],])
       )
     }
     colnames(pedChar) <- c(indivCol, damCol, sireCol)
