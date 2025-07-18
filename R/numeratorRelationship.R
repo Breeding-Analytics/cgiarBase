@@ -80,16 +80,15 @@ nrm2 <- function(
   if(returnMatrix){
     return(A)
   }else{
-    if(nrow(pedData) == length(which(is.na(pedData$dam)))){ # no pedigree information available
-      pedtmp<-as.data.frame(cbind(ped@label,ped@dam,ped@sire))
-      pedtmp<-pedtmp[order(as.numeric(pedtmp[,1])),]      
-      pedChar <- data.frame(a=as.character(idsDfInverse[pedtmp[,1],]), 
+    if(nrow(pedData) == length(which(is.na(pedData$dam)))){ # no pedigree information available      
+      pedtmp <- pedData[order(as.numeric(pedData[,1])),]      
+      pedChar <- data.frame(a=as.character(pedtmp[,1]), 
                             b= NA,
                             c = NA
       )
     }else{
-      pedtmp<-as.data.frame(cbind(ped@label,ped@dam,ped@sire))
-      pedtmp<-pedtmp[order(as.numeric(pedtmp[,1])),]      
+      pedtmp <- as.data.frame(cbind(ped@label,ped@dam,ped@sire))
+      pedtmp <- pedtmp[order(as.numeric(pedtmp[,1])),]      
       pedChar <- data.frame(a=as.character(idsDfInverse[pedtmp[,1],]), 
                             b= as.character(idsDfInverse[pedtmp[,2],]),
                             c = as.character(idsDfInverse[pedtmp[,3],])
