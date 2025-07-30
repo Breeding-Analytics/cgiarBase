@@ -29,8 +29,8 @@ bindObjects <- function(
             if(!is.null(provPheno1)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
                 colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
-                                                                 Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter != "trait"],
-                                                                 Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter != "trait"])
+                                                                 Search = object1$metadata[[subItems[iSub]]]$value[object1$metadata[[subItems[iSub]]]$parameter %!in% c("trait","source","sourceId")],
+                                                                 Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter %!in% c("trait","source","sourceId")])
               }
             }
             object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter != ""  & object2$metadata[[subItems[iSub]]]$value != "" ),]
@@ -38,8 +38,8 @@ bindObjects <- function(
             if(!is.null(provPheno2)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
               colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2),
-                                                               Search = object2$metadata[[subItems[iSub]]]$value[object2$metadata[[subItems[iSub]]]$parameter != "trait"],
-                                                               Replace = object2$metadata[[subItems[iSub]]]$parameter[object2$metadata[[subItems[iSub]]]$parameter != "trait"])
+                                                               Search = object2$metadata[[subItems[iSub]]]$value[object2$metadata[[subItems[iSub]]]$parameter %!in% c("trait","source","sourceId")],
+                                                               Replace = object2$metadata[[subItems[iSub]]]$parameter[object2$metadata[[subItems[iSub]]]$parameter %!in% c("trait","source","sourceId")])
               }
             }
             allNames <- unique(c(colnames(provPheno1), colnames(provPheno2)))
@@ -140,33 +140,45 @@ bindObjects <- function(
               }
             } # end of: if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) )
           }else if(subItems[iSub] == "weather"){
-            mainElements$data[[subItems[iSub]]] <- unique( rbind(object1$data[[subItems[iSub]]], object2$data[[subItems[iSub]]] ) )
-            mainElements$metadata[[subItems[iSub]]] <- unique( rbind(object1$metadata[[subItems[iSub]]], object2$metadata[[subItems[iSub]]] ) )
+            if(!is.null(object1$data[[subItems[iSub]]]) | !is.null(object2$data[[subItems[iSub]]])){
+              mainElements$data[[subItems[iSub]]] <- unique( rbind(object1$data[[subItems[iSub]]], object2$data[[subItems[iSub]]] ) )
+              mainElements$metadata[[subItems[iSub]]] <- unique( rbind(object1$metadata[[subItems[iSub]]], object2$metadata[[subItems[iSub]]] ) )
+            }
           } # end of: if(subItems[iSub] %in% c("pheno","pedigree","weather","qtl") )
         }else if(names(mainElements)[iMain] == "modifications"){ #  modifications  can be easily binded, is just long format tables
-          mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]][[subItems[iSub]]], object2[[names(mainElements)[iMain]]][[subItems[iSub]]] ) )
+          if(!is.null(object1[[names(mainElements)[iMain]]][[subItems[iSub]]]) | !is.null(object2[[names(mainElements)[iMain]]][[subItems[iSub]]])){
+            mainElements[[names(mainElements)[iMain]]][[subItems[iSub]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]][[subItems[iSub]]], object2[[names(mainElements)[iMain]]][[subItems[iSub]]] ) )
+          }
         }
       } # end of: for(iSub in 1:length(mainElements[[names(mainElements)[iMain]]]) )
     }else{ # user wants to do a pure row bind (predictions, metrics, modeling, status tables)
-      if(names(mainElements)[iMain] == "status"){
-        if ("analysisIdName" %!in% colnames(object1[[names(mainElements)[iMain]]])){
-          object1[[names(mainElements)[iMain]]]$analysisIdName <- ""
-        }
-        if ("analysisIdName" %!in% colnames(object2[[names(mainElements)[iMain]]])){
-          object2[[names(mainElements)[iMain]]]$analysisIdName <- ""
-        }
-      } else if(names(mainElements)[iMain] == "predictions"){
-        if ("effectType" %!in% colnames(object1[[names(mainElements)[iMain]]])){
-          object1[[names(mainElements)[iMain]]]$effectType <- NA
-        }
-        if ("effectType" %!in% colnames(object2[[names(mainElements)[iMain]]])){
-          object2[[names(mainElements)[iMain]]]$effectType <- NA
+      if(!is.null(object1[[names(mainElements)[iMain]]])){
+        if(names(mainElements)[iMain] == "status"){
+          if ("analysisIdName" %!in% colnames(object1[[names(mainElements)[iMain]]])){
+            object1[[names(mainElements)[iMain]]]$analysisIdName <- ""
+          }
+        }else if(names(mainElements)[iMain] == "predictions"){
+          if ("effectType" %!in% colnames(object1[[names(mainElements)[iMain]]])){
+            object1[[names(mainElements)[iMain]]]$effectType <- NA
+          }
         }
       }
       
-      mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
-      # print(mainElements[[names(mainElements)[iMain]]])
-      if(!is.null(mainElements[[names(mainElements)[iMain]]])){
+      if(!is.null(object2[[names(mainElements)[iMain]]])){
+        if(names(mainElements)[iMain] == "status"){
+          if ("analysisIdName" %!in% colnames(object2[[names(mainElements)[iMain]]])){
+            object2[[names(mainElements)[iMain]]]$analysisIdName <- ""
+          }
+        }else if(names(mainElements)[iMain] == "predictions"){
+          if ("effectType" %!in% colnames(object2[[names(mainElements)[iMain]]])){
+            object2[[names(mainElements)[iMain]]]$effectType <- NA
+          }
+        }
+      }
+      
+      if(!is.null(object1[[names(mainElements)[iMain]]]) | !is.null(object2[[names(mainElements)[iMain]]])){
+        mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
+        # print(mainElements[[names(mainElements)[iMain]]])
         if(nrow(mainElements[[names(mainElements)[iMain]]]) == 0){mainElements[[names(mainElements)[iMain]]] <- NULL}
       }
     }
