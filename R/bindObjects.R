@@ -24,7 +24,7 @@ bindObjects <- function(
           # we have to modify both data and metadata at the same time
           if(subItems[iSub] %in% c("pheno","pedigree","qtl") ){
             # bind data tables
-            object1$metadata[[subItems[iSub]]] <- object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter != ""  & object1$metadata[[subItems[iSub]]]$value != "" ),]
+            object1$metadata[[subItems[iSub]]] <- object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter %!in% c("", "source", "sourceId")  & object1$metadata[[subItems[iSub]]]$value %!in% c("", "source", "sourceId")),]
             provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno1)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
@@ -33,7 +33,7 @@ bindObjects <- function(
                                                                  Replace = object1$metadata[[subItems[iSub]]]$parameter[object1$metadata[[subItems[iSub]]]$parameter %!in% c("trait","source","sourceId")])
               }
             }
-            object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter != ""  & object2$metadata[[subItems[iSub]]]$value != "" ),]
+            object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter %!in% c("", "source", "sourceId")  & object2$metadata[[subItems[iSub]]]$value %!in% c("", "source", "sourceId") ),]
             provPheno2 <- object2$data[[subItems[iSub]]][ ,object2$metadata[[subItems[iSub]]]$value, drop=FALSE]
             if(!is.null(provPheno2)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
