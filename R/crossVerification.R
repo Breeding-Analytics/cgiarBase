@@ -244,7 +244,7 @@ crossVerification <- function(Mf,Mm,Mp,
   n_homo <- rowSums(homo_Mm, na.rm = TRUE)
   het_pct_mal <- (pmax(n_non_missing - n_homo, 0) / pmax(n_non_missing, 1)) * 100
 
-  parHetFilter = as.numeric(het_pct_fem < het & het_pct_mal < het)
+  parHetFilter = as.numeric(het_pct_fem =< het & het_pct_mal =< het)
 
   res <- data.frame(designation=rownames(Mp),probMatch,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter)
   rownames(res) <- NULL
