@@ -25,7 +25,9 @@ bindObjects <- function(
           if(subItems[iSub] %in% c("pheno","pedigree","qtl") ){
             # bind data tables
             object1$metadata[[subItems[iSub]]] <- object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter %!in% c("", "source", "sourceId")  & object1$metadata[[subItems[iSub]]]$value %!in% c("", "source", "sourceId")),]
-            provPheno1 <- object1$data[[subItems[iSub]]][ ,object1$metadata[[subItems[iSub]]]$value, drop=FALSE]
+            residTrait1 <- paste0(object1$metadata[[subItems[iSub]]][which(object1$metadata[[subItems[iSub]]]$parameter == "trait"),"value"],"-residual")
+            residTrait1 <- residTrait1[which(residTrait1 %in% colnames(object1$data[[subItems[iSub]]]))]
+            provPheno1 <- object1$data[[subItems[iSub]]][ ,c(object1$metadata[[subItems[iSub]]]$value,residTrait1), drop=FALSE]
             if(!is.null(provPheno1)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
                 colnames(provPheno1) <- cgiarBase::replaceValues(Source = colnames(provPheno1),
@@ -34,7 +36,9 @@ bindObjects <- function(
               }
             }
             object2$metadata[[subItems[iSub]]] <- object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter %!in% c("", "source", "sourceId")  & object2$metadata[[subItems[iSub]]]$value %!in% c("", "source", "sourceId") ),]
-            provPheno2 <- object2$data[[subItems[iSub]]][ ,object2$metadata[[subItems[iSub]]]$value, drop=FALSE]
+            residTrait2 <- paste0(object2$metadata[[subItems[iSub]]][which(object2$metadata[[subItems[iSub]]]$parameter == "trait"),"value"],"-residual")
+            residTrait2 <- residTrait2[which(residTrait2 %in% colnames(object2$data[[subItems[iSub]]]))]
+            provPheno2 <- object2$data[[subItems[iSub]]][ ,c(object2$metadata[[subItems[iSub]]]$value,residTrait2), drop=FALSE]
             if(!is.null(provPheno2)){
               if(subItems[iSub] %in% c("pheno","pedigree") ){
               colnames(provPheno2) <- cgiarBase::replaceValues(Source = colnames(provPheno2),
@@ -163,7 +167,7 @@ bindObjects <- function(
           }
         }
       }
-      
+
       if(!is.null(object2[[names(mainElements)[iMain]]])){
         if(names(mainElements)[iMain] == "status"){
           if ("analysisIdName" %!in% colnames(object2[[names(mainElements)[iMain]]])){
@@ -175,7 +179,7 @@ bindObjects <- function(
           }
         }
       }
-      
+
       if(!is.null(object1[[names(mainElements)[iMain]]]) | !is.null(object2[[names(mainElements)[iMain]]])){
         mainElements[[names(mainElements)[iMain]]] <-  unique( rbind( object1[[names(mainElements)[iMain]]], object2[[names(mainElements)[iMain]]] ) )
         # print(mainElements[[names(mainElements)[iMain]]])
