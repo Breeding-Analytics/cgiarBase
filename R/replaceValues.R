@@ -4,15 +4,7 @@ replaceValues <- function(Source, Search, Replace){
   Changed <- as.character(Source)
 
   for (i in 1:length(Search)) {
-    if(!is.na(Replace[i])){
-      if((Replace[i] %in% Changed) & (Replace[i] != Search[i])){
-        Changed <- replace(Changed, Changed == Replace[i], paste0(Replace[i],"_dup"))
-      }
-    }
-  }
-
-  for (j in 1:length(Search)) {
-    Changed <- replace(Changed, Changed == Search[j], Replace[j])
+    Changed <- replace(Changed, Changed == Search[i], Replace[i])
   }
   # silly comment
 
