@@ -29,6 +29,9 @@ crossVerification <- function(Mf,Mm,Mp,
   # Only score cells where all three are present
   ok = !is.na(Mf) & !is.na(Mm) & !is.na(Mp)
 
+  #Make NA if there's missing genotype data
+  resultMatch[!ok] <- NA_real_
+
   ## homo × homo -----
 
   # 0 × 0  -> offspring must be 0
@@ -135,7 +138,11 @@ crossVerification <- function(Mf,Mm,Mp,
 
   # compute metrics for individuals
   if(is.null(sc_filter)){
-    probMatch = apply(resultMatch,1,function(x){sum(x)/length(x)})  # proportion of markers matching
+    probMatch <- apply(resultMatch, 1, function(x) {
+      num <- sum(x, na.rm = TRUE)
+      den <- sum(!is.na(x))
+      if (den > 0) num / den else NA_real_
+    })
   }else if(sc_filter == "Score2"){
     sel = (score_Mexp == 2L)
     probMatch = rowMeans(ifelse(sel, resultMatch, NA_real_), na.rm = TRUE)
@@ -145,7 +152,11 @@ crossVerification <- function(Mf,Mm,Mp,
   }
 
   #Observed heterozigosity
-  heteroMp = apply(Mp,1,function(x){length(which(x == 1))/length(x)}) # heterozigosity found in progeny
+  heteroMp <- {
+    num <- rowSums(Mp == 1, na.rm = TRUE)
+    den <- rowSums(!is.na(Mp))
+    ifelse(den > 0, num / den, NA_real_)
+  } # heterozigosity found in progeny
 
   #Expected heterozigosity
   # Precompute hypergeometric: gamete Pr(0) and Pr(m) for all parental dosages
@@ -244,7 +255,7 @@ crossVerification <- function(Mf,Mm,Mp,
   n_homo <- rowSums(homo_Mm, na.rm = TRUE)
   het_pct_mal <- (pmax(n_non_missing - n_homo, 0) / pmax(n_non_missing, 1)) * 100
 
-  parHetFilter = as.numeric(het_pct_fem < het & het_pct_mal < het)
+  parHetFilter = as.numeric(het_pct_fem =< het & het_pct_mal =< het)
 
   res <- data.frame(designation=rownames(Mp),probMatch,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter)
   rownames(res) <- NULL
