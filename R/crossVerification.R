@@ -159,6 +159,26 @@ crossVerification <- function(Mf,Mm,Mp,
     })
   }
 
+  # Probability of selfing: same per-marker likelihood as probMatch but under mother x mother.
+  # Offspring dosage distribution = convolution of the mother's gamete distribution with itself.
+  # Uses the same cells (ok) and the same marker selection (sc_filter) as probMatch.
+  selfMatch = matrix(NA_real_, nrow(Mp), ncol(Mp))
+  for (a in 0:ploidy) {
+    pos = which(ok & Mf == a)
+    if (!length(pos)) next
+    px = dhyper(0:m, m = a, n = ploidy - a, k = m)
+    pD = sapply(0:ploidy, function(d) { xs = max(0L, d - m):min(m, d); sum(px[xs + 1L] * px[d - xs + 1L]) })
+    selfMatch[pos] = pD[Mp[pos] + 1L]
+  }
+  if (!is.null(sc_filter)) {
+    selS = if (sc_filter == "Score2") (score_Mexp == 2L) else (score_Mexp != 0)
+    selfMatch[which(!as.matrix(selS))] = NA_real_
+  }
+  probSelf <- apply(selfMatch, 1, function(x) {
+    den <- sum(!is.na(x))
+    if (den >= min_markers) sum(x, na.rm = TRUE) / den else NA_real_
+  })
+
   #Observed heterozigosity
   heteroMp <- {
     num <- rowSums(Mp == 1, na.rm = TRUE)
@@ -265,7 +285,7 @@ crossVerification <- function(Mf,Mm,Mp,
 
   parHetFilter = as.numeric(het_pct_fem <= het & het_pct_mal <= het)
 
-  res <- data.frame(designation=rownames(Mp),probMatch,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter)
+  res <- data.frame(designation=rownames(Mp),probMatch,probSelf,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter)
   rownames(res) <- NULL
   # compute metrics for markers
   return(list(metricsInd=res,matchMat=resultMatch,Mprogeny=Mp, Mfemale=Mf, Mmale=Mm, Mexpected=Mexp))
