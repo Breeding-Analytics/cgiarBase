@@ -4,7 +4,9 @@ crossVerification <- function(Mf,Mm,Mp,
                               Mexp=NULL,
                               sc_filter=NULL,
                               ploidy=2,
-                              het = NULL){
+                              het = NULL,
+                              callError = 0.01,
+                              selfBoundary = 70){
 
   # take the markers of the progeny (Mp) and
   # calculate the probability of belonging to a given male and female
@@ -179,6 +181,50 @@ crossVerification <- function(Mf,Mm,Mp,
     if (den >= min_markers) sum(x, na.rm = TRUE) / den else NA_real_
   })
 
+  # Self evidence: intended F1 vs self of the mother vs self of the father, as summed per-marker
+  # log-likelihood ratios. Offspring call error is spread evenly over the other `ploidy` dosage states.
+  # Uses the probMatch cells with whole-number dosages; does not change any existing score.
+  # selfEvidence: -1 = F1-supported, 0 = unresolved, 1 = self of mother, 2 = self of father,
+  #                3 = self-supported but not attributable to one parent (mixed); NA = no usable markers.
+  # A parent is only named if the calls that are impossible under its self (among the markers where
+  # the parents differ) are plausible as call errors: P(Binomial(n, callError) >= k) >= 1/selfBoundary.
+  if (!(is.numeric(callError) && length(callError) == 1 && callError > 0 && callError < ploidy / (ploidy + 1))) {
+    stop("callError must be a single number above 0 and below ploidy/(ploidy+1)", call. = FALSE)
+  }
+  if (!(is.numeric(selfBoundary) && length(selfBoundary) == 1 && selfBoundary > 1)) {
+    stop("selfBoundary must be a single number above 1", call. = FALSE)
+  }
+  selfMatchP = matrix(NA_real_, nrow(Mp), ncol(Mp))
+  for (a in 0:ploidy) {
+    pos = which(ok & Mm == a)
+    if (!length(pos)) next
+    px = dhyper(0:m, m = a, n = ploidy - a, k = m)
+    pD = sapply(0:ploidy, function(d) { xs = max(0L, d - m):min(m, d); sum(px[xs + 1L] * px[d - xs + 1L]) })
+    selfMatchP[pos] = pD[Mp[pos] + 1L]
+  }
+  selC = if (is.null(sc_filter)) TRUE else if (sc_filter == "Score2") (score_Mexp == 2L) else (score_Mexp != 0)
+  isDose = function(M) !is.na(M) & M == round(M) & M >= 0 & M <= ploidy
+  pF = as.matrix(resultMatch)
+  use = ok & isDose(Mf) & isDose(Mm) & isDose(Mp) & !is.na(pF) & !is.na(selfMatch) & !is.na(selfMatchP) & selC
+  use[is.na(use)] = FALSE
+  adj = function(x) (1 - callError) * x + callError / ploidy * (1 - x)
+  Lm = rowSums(ifelse(use, log(adj(selfMatch)) - log(adj(pF)), 0))
+  Lp = rowSums(ifelse(use, log(adj(selfMatchP)) - log(adj(pF)), 0))
+  diffM = use & (Mf != Mm)
+  nDiffUsed = rowSums(diffM)
+  plausible = function(Q) {
+    k = rowSums(diffM & Q == 0, na.rm = TRUE)
+    pbinom(k - 1, nDiffUsed, callError, lower.tail = FALSE) >= 1 / selfBoundary
+  }
+  b = log(selfBoundary)
+  selfEvidence = ifelse(rowSums(use) == 0, NA_real_,
+                 ifelse(pmax(Lm, Lp) >= b,
+                        ifelse(Lm - Lp >= b & plausible(selfMatch), 1,
+                        ifelse(Lp - Lm >= b & plausible(selfMatchP), 2, 3)),
+                 ifelse(Lm <= -b & Lp <= -b, -1, 0)))
+  # number of selected markers where the two parents' calls differ (per cross, offspring calls not needed)
+  nDiffCross = rowSums(!is.na(Mf) & !is.na(Mm) & Mf != Mm & selC, na.rm = TRUE)
+
   #Observed heterozigosity
   heteroMp <- {
     num <- rowSums(Mp == 1, na.rm = TRUE)
@@ -285,10 +331,11 @@ crossVerification <- function(Mf,Mm,Mp,
 
   parHetFilter = as.numeric(het_pct_fem <= het & het_pct_mal <= het)
 
-  res <- data.frame(designation=rownames(Mp),probMatch,probSelf,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter)
+  res <- data.frame(designation=rownames(Mp),probMatch,probSelf,heteroMp,heteroMexp,heteroDeviation,avgScore,nScore2,nMarkers,parHetFilter,selfEvidence,nDiffCross)
   rownames(res) <- NULL
   # compute metrics for markers
-  return(list(metricsInd=res,matchMat=resultMatch,Mprogeny=Mp, Mfemale=Mf, Mmale=Mm, Mexpected=Mexp))
+  return(list(metricsInd=res,matchMat=resultMatch,Mprogeny=Mp, Mfemale=Mf, Mmale=Mm, Mexpected=Mexp,
+              selfLogLR=cbind(mother=Lm, father=Lp)))
 
 }
 
