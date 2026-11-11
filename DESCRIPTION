@@ -9,4 +9,4 @@ Description: Software for analytical pipelines
 Depends: R (>= 3.5.0)
 License: GPL (>= 2)
 Imports: stats, graphics, grDevices, pbapply
-Suggests: parallel
+Suggests: parallel, adegenet
