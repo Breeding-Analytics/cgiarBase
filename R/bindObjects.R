@@ -73,7 +73,11 @@ bindObjects <- function(
             newMetadata <- unique(rbind(newMetadata, traits))
             mainElements$metadata[[subItems[iSub]]] <- newMetadata
           }else if(subItems[iSub] == "geno"){ # if we need to fill the genotype slot
-            if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) ){ # ifboth objects have genotype data
+            if( inherits(object1$data$geno, "genlight") || inherits(object2$data$geno, "genlight") ){ # genlight format (current Bioflow)
+              genoRes <- bindGenlightSlots(object1, object2)
+              mainElements$data$geno <- genoRes$geno
+              mainElements$metadata$geno <- genoRes$metadata
+            }else if( !is.null(object1$data$geno) &  !is.null(object2$data$geno) ){ # ifboth objects have genotype data
               uniqueMarkers <- unique( c( colnames(object1$data$geno), colnames(object2$data$geno) ))
               # only keep new individuals, ignore the others
               newInds <- setdiff( rownames(object2$data$geno), rownames(object1$data$geno) )
@@ -188,5 +192,122 @@ bindObjects <- function(
     }
   }
 
+  # carry over slots not defined in create_getData_object() (e.g. modifications$selection,
+  # data$geno_imp, data$TPP, metadata$TPP, metadata$tpp_analysis_config) so they are not
+  # silently dropped. Named lists (keyed by analysisId / TPP id) are unioned by name and
+  # object1 wins on duplicated names.
+  for(iMain in c("data", "metadata", "modifications")){
+    extraSlots <- setdiff(unique(c(names(object1[[iMain]]), names(object2[[iMain]]))),
+                          names(mainElements[[iMain]]))
+    for(iSlot in extraSlots){
+      x1 <- object1[[iMain]][[iSlot]]; x2 <- object2[[iMain]][[iSlot]]
+      if(is.data.frame(x1) && is.data.frame(x2) && nrow(x1) > 0 && nrow(x2) > 0){
+        allCols <- unique(c(colnames(x1), colnames(x2)))
+        for(cc in setdiff(allCols, colnames(x1))) x1[[cc]] <- NA
+        for(cc in setdiff(allCols, colnames(x2))) x2[[cc]] <- NA
+        newX <- unique(rbind(x1[, allCols, drop = FALSE], x2[, allCols, drop = FALSE]))
+        rownames(newX) <- NULL
+      }else if(is.list(x1) && is.list(x2) && !is.data.frame(x1) && !is.data.frame(x2)){
+        newX <- c(x1, x2[setdiff(names(x2), names(x1))]) # named lists keyed by analysisId
+      }else if(is.data.frame(x1) && nrow(x1) > 0){
+        newX <- x1
+      }else if(!is.null(x2) && !(is.data.frame(x2) && nrow(x2) == 0)){
+        newX <- x2
+      }else{
+        newX <- x1
+      }
+      if(!is.null(newX)) mainElements[[iMain]][[iSlot]] <- newX
+    }
+  }
+
   return(mainElements)
+}
+
+## Internal: bind the genotype slots of two Bioflow objects when data$geno is an
+## adegenet genlight and metadata$geno is a parameter/value table.
+## - Same loci in both objects: rows are stacked (rbind.genlight).
+## - Different loci: union of loci; calls missing in one object are NA. For shared
+##   loci with reversed alleles (A/G vs G/A) the second object's dosage is flipped;
+##   for incompatible alleles the locus is set to NA in the second object.
+## - Duplicated individuals keep the record from object1.
+bindGenlightSlots <- function(object1, object2){
+  if(!requireNamespace("adegenet", quietly = TRUE)){
+    stop("Package 'adegenet' is required to bind genlight genotype data.", call. = FALSE)
+  }
+  g1 <- object1$data$geno; g2 <- object2$data$geno
+  m1 <- object1$metadata$geno; m2 <- object2$metadata$geno
+  isGl1 <- inherits(g1, "genlight") && adegenet::nInd(g1) > 0
+  isGl2 <- inherits(g2, "genlight") && adegenet::nInd(g2) > 0
+  # only one side has genotype data
+  if(!isGl2){ return(list(geno = g1, metadata = m1)) }
+  if(!isGl1){ return(list(geno = g2, metadata = m2)) }
+
+  # metadata: parameter/value table, object1 wins on duplicated parameters
+  metaX <- rbind(m1, m2)
+  if(!is.null(metaX) && all(c("parameter", "value") %in% colnames(metaX))){
+    p1 <- m1$value[m1$parameter == "ploidity"]; p2 <- m2$value[m2$parameter == "ploidity"]
+    if(length(p1) && length(p2) && as.character(p1[1]) != as.character(p2[1])){
+      stop("Cannot bind genotype data with different ploidy levels (", p1[1], " vs ", p2[1], ").", call. = FALSE)
+    }
+    metaX <- metaX[!duplicated(metaX$parameter), , drop = FALSE]
+    rownames(metaX) <- NULL
+  }
+
+  ploidy1 <- unique(adegenet::ploidy(g1)); ploidy2 <- unique(adegenet::ploidy(g2))
+  if(length(ploidy1) == 1 && length(ploidy2) == 1 && ploidy1 != ploidy2){
+    stop("Cannot bind genotype data with different ploidy levels (", ploidy1, " vs ", ploidy2, ").", call. = FALSE)
+  }
+
+  loc1 <- adegenet::locNames(g1); loc2 <- adegenet::locNames(g2)
+  newInds <- setdiff(adegenet::indNames(g2), adegenet::indNames(g1))
+
+  if(identical(loc1, loc2)){ # same marker set and order: straight row bind
+    if(length(newInds) == 0){ return(list(geno = g1, metadata = metaX)) }
+    gx <- adegenet::rbind.genlight(g1, g2[adegenet::indNames(g2) %in% newInds, ])
+    return(list(geno = gx, metadata = metaX))
+  }
+
+  # different marker sets: union of loci through dosage matrices
+  M1 <- adegenet::as.matrix(g1)
+  M2 <- adegenet::as.matrix(g2)[adegenet::indNames(g2) %in% newInds, , drop = FALSE]
+  uniqueMarkers <- unique(c(loc1, loc2))
+  Mx <- matrix(NA_real_, nrow = nrow(M1) + nrow(M2), ncol = length(uniqueMarkers),
+               dimnames = list(c(rownames(M1), rownames(M2)), uniqueMarkers))
+  Mx[seq_len(nrow(M1)), loc1] <- M1
+  if(nrow(M2) > 0){
+    rows2 <- nrow(M1) + seq_len(nrow(M2))
+    Mx[rows2, loc2] <- M2
+    al1 <- adegenet::alleles(g1); al2 <- adegenet::alleles(g2)
+    if(!is.null(al1) && !is.null(al2)){
+      names(al1) <- loc1; names(al2) <- loc2
+      shared <- intersect(loc1, loc2)
+      a1 <- al1[shared]; a2 <- al2[shared]
+      differ <- shared[a1 != a2]
+      if(length(differ) > 0){
+        flipped <- vapply(strsplit(al2[differ], "/", fixed = TRUE),
+                          function(x) paste(rev(x), collapse = "/"), character(1))
+        toFlip <- differ[flipped == al1[differ]]
+        toNA <- setdiff(differ, toFlip)
+        pl <- if(length(ploidy2) == 1) ploidy2 else 2
+        if(length(toFlip)) Mx[rows2, toFlip] <- pl - Mx[rows2, toFlip]
+        if(length(toNA)) Mx[rows2, toNA] <- NA
+      }
+    }
+  }
+  gx <- new("genlight", Mx, ploidy = if(length(ploidy1) == 1) ploidy1 else 2)
+  # carry over locus annotation (object1 first, then loci only present in object2)
+  getAnn <- function(f, g, loc){ v <- f(g); if(is.null(v)) NULL else stats::setNames(as.character(v), loc) }
+  chr1 <- getAnn(adegenet::chromosome, g1, loc1); chr2 <- getAnn(adegenet::chromosome, g2, loc2)
+  if(!is.null(chr1) || !is.null(chr2)){
+    adegenet::chromosome(gx) <- unname(c(chr1, chr2)[uniqueMarkers])
+  }
+  pos1 <- getAnn(adegenet::position, g1, loc1); pos2 <- getAnn(adegenet::position, g2, loc2)
+  if(!is.null(pos1) || !is.null(pos2)){
+    adegenet::position(gx) <- unname(c(pos1, pos2)[uniqueMarkers])
+  }
+  al1 <- getAnn(adegenet::alleles, g1, loc1); al2 <- getAnn(adegenet::alleles, g2, loc2)
+  if(!is.null(al1) || !is.null(al2)){
+    adegenet::alleles(gx) <- unname(c(al1, al2)[uniqueMarkers])
+  }
+  list(geno = gx, metadata = metaX)
 }
